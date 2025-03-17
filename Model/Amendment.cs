@@ -6,8 +6,7 @@ namespace WordParserLibrary.Model
 {
     public class Amendment : BaseEntity
     {
-        public BaseEntity Parent { get; set; }
-        public Amendment(Paragraph paragraph, BaseEntity parent) : base(paragraph)
+        public Amendment(Paragraph paragraph, BaseEntity parent) : base(paragraph, parent)
         {
             Article = parent.Article ?? (parent as Article);
             Subsection = parent.Subsection ?? (parent as Subsection);

@@ -1,3 +1,4 @@
+
 namespace WordParserLibrary
 {
     public static class XMLConstants
@@ -16,5 +17,28 @@ namespace WordParserLibrary
         public const string PublicationYear = "publikatorRok";
         public const string PublicationNumber = "publikatorNumer";
         public const string LetterOrdinal = "litera";
+
+        public const string AmendmentOperation = "pn";
+
+        internal static string GetTagName(string elementName)
+        {
+            return elementName switch
+            {
+                nameof(Article) => Article,
+                nameof(Title) => Title,
+                nameof(Subsection) => Subsection,
+                nameof(Point) => Point,
+                nameof(Letter) => Letter,
+                nameof(Tiret) => Tiret,
+                nameof(Amendment) => Amendment,
+                nameof(Number) => Number,
+                nameof(Amending) => Amending,
+                nameof(PublicationYear) => PublicationYear,
+                nameof(PublicationNumber) => PublicationNumber,
+                nameof(LetterOrdinal) => LetterOrdinal,
+                nameof(AmendmentOperation) => AmendmentOperation,
+                _ => throw new ArgumentException("Invalid element name", nameof(elementName))
+            };
+        }
     }
 }

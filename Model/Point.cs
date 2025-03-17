@@ -5,20 +5,15 @@ using DocumentFormat.OpenXml.Wordprocessing;
 namespace WordParserLibrary.Model
 {
     public class Point : BaseEntity, IAmendable {
-        public Subsection Parent { get; set; }
         public List<Letter> Letters { get; set; }
         public List<Amendment> Amendments { get; set; }
         public string Number { get; set; }
-        public Point(Paragraph paragraph, Subsection parent) : base(paragraph)
+        public Point(Paragraph paragraph, Subsection parent) : base(paragraph, parent)
         {
-            Article = parent.Parent;
-            Subsection = parent;
-            Parent = parent;
             Number = Content.ExtractOrdinal();
             Letters = new List<Letter>();
             Amendments = new List<Amendment>();
             bool isAdjacent = true;
-            if (Article.IsAmending) TryParseAmendingOperation();
             while (paragraph.NextSibling() is Paragraph nextParagraph 
                     && nextParagraph.StyleId("PKT") != true
                     && nextParagraph.StyleId("UST") != true

@@ -5,17 +5,12 @@ using DocumentFormat.OpenXml.Wordprocessing;
 namespace WordParserLibrary.Model
 {
         public class Letter : BaseEntity, IAmendable {
-        public Point Parent { get; set; }
         public List<Tiret> Tirets { get; set; }
         public string Ordinal { get; set; }
         public List<Amendment> Amendments { get; set; }
 
-        public Letter(Paragraph paragraph, Point parent) : base(paragraph)
+        public Letter(Paragraph paragraph, Point parent) : base(paragraph, parent)
         {
-            Article = parent.Article;
-            Subsection = parent.Subsection;
-            Point = parent;
-            Parent = parent;
             Ordinal = Content.ExtractOrdinal();
             Tirets = new List<Tiret>();
             Amendments = new List<Amendment>();

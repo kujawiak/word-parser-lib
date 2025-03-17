@@ -5,7 +5,6 @@ using DocumentFormat.OpenXml.Wordprocessing;
 namespace WordParserLibrary.Model
 {
      public class Subsection : BaseEntity, IAmendable {
-        public Article Parent { get; set; }
         public List<Point> Points { get; set; }
         public int Number { get; set; }
         public List<Amendment> Amendments { get; set; }
@@ -16,11 +15,10 @@ namespace WordParserLibrary.Model
         /// <param name="paragraph">The paragraph associated with this subsection.</param>
         /// <param name="article">The parent article of this subsection.</param>
         /// <param name="ordinal">The ordinal number of this subsection. Default is 1.</param>
-        public Subsection(Paragraph paragraph, Article article, int ordinal = 1) : base(paragraph)
+        public Subsection(Paragraph paragraph, Article article, int ordinal = 1) : base(paragraph, article)
         {
-            Parent = article;
-            Article = article;
             Number = ordinal;
+            Content = Parent.Content;
             Points = new List<Point>();
             Amendments = new List<Amendment>();
             bool isAdjacent = true;

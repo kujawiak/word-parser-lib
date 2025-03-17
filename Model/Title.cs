@@ -10,7 +10,7 @@ namespace WordParserLibrary.Model
         public string TitleText { get; set; }
         public List<Part> Parts { get; set; } = new List<Part>();
 
-        public Title(Paragraph paragraph) : base(paragraph)
+        public Title(Paragraph paragraph) : base(paragraph, null)
         {
         }
     }

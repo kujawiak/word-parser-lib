@@ -13,9 +13,9 @@ namespace WordParserLibrary.Model
         public List<Subsection> Subsections { get; set; }
         public List<string> AmendmentList { get; set; }
 
-        public Article(Paragraph paragraph) : base(paragraph)
+        public Article(Paragraph paragraph) : base(paragraph, null)
         {
-            Number = SetNumber();
+            ParseArticle(paragraph.InnerText.Sanitize());
             IsAmending = SetAmendment();
             Subsections = [new Subsection(paragraph, this)];
             AmendmentList = new List<string>();
@@ -32,10 +32,11 @@ namespace WordParserLibrary.Model
             }
         }
 
-        string SetNumber()
+        void ParseArticle(string text)
         {
-            var match = Regex.Match(Content, @"Art\. ([\w\d]+)\.");
-            return match.Success ? match.Groups[1].Value : "Unknown";
+            var match = Regex.Match(text, @"Art\. ([\w\d]+)+\.?\s*(.*)");
+            Number = match.Success ? match.Groups[1].Value : "Unknown";
+            Content = match.Success ? match.Groups[2].Value : string.Empty;
         }
 
         bool SetAmendment()
