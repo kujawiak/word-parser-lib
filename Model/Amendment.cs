@@ -16,28 +16,5 @@ namespace WordParserLibrary.Model
             Parent = parent;
             Paragraph = paragraph;
         }
-
-        public string? AmendedAct { 
-            get
-            {
-                var art = Article?.Content;
-                var ust = Subsection?.Content;
-                var pkt = Point?.Content;
-                var lit = Letter?.Content;
-                var tir = Tiret?.Content;
-                var parts = new List<string>
-                {
-                    Article?.PublicationNumber?.ToString() ?? string.Empty,
-                    Article?.PublicationYear?.ToString() ?? string.Empty
-                };
-                // if (!string.IsNullOrEmpty(ust)) parts.Add(ust);
-                if (!string.IsNullOrEmpty(pkt)) parts.Add(pkt);
-                if (!string.IsNullOrEmpty(lit)) parts.Add(lit);
-                if (!string.IsNullOrEmpty(tir)) parts.Add(tir);
-                var regexInput = parts.Count > 0 ? string.Join("|", parts) : null;
-                Parent.Article.AmendmentList.Add(regexInput);
-                return regexInput.GetAmendingProcedure();
-            }
-        }
     }
 }

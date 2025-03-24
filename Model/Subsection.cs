@@ -18,7 +18,6 @@ namespace WordParserLibrary.Model
         public Subsection(Paragraph paragraph, Article article, int ordinal = 1) : base(paragraph, article)
         {
             Number = ordinal;
-            Content = Parent.Content;
             Points = new List<Point>();
             Amendments = new List<Amendment>();
             bool isAdjacent = true;
