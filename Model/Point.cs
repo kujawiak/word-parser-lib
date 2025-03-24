@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace WordParserLibrary.Model
@@ -10,7 +11,9 @@ namespace WordParserLibrary.Model
         public string Number { get; set; }
         public Point(Paragraph paragraph, Subsection parent) : base(paragraph, parent)
         {
-            Number = Content.ExtractOrdinal();
+            var parsedPoint = ParseOrdinal(Content);
+            Number = parsedPoint[1].Value;
+            Content = parsedPoint[2].Value;
             Letters = new List<Letter>();
             Amendments = new List<Amendment>();
             bool isAdjacent = true;

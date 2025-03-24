@@ -51,7 +51,7 @@ namespace WordParserLibrary
 
                 if (paragraphStyle != null && paragraphStyle?.ToString()?.StartsWith("ART") == true)
                 {
-                    Console.WriteLine("[CTOR]\tZnaleziono artykuł w paragrafie: " + paragraph.InnerText);
+                    // Console.WriteLine("[CTOR]\tZnaleziono artykuł w paragrafie: " + paragraph.InnerText);
                     Articles.Add(new Article(paragraph));
                 }
             }
@@ -471,9 +471,10 @@ namespace WordParserLibrary
             {
                 var entity = element as BaseEntity;
                 if (entity == null) continue;
-                Console.WriteLine($"[XML]\t[{tagName}]\tPrzetwarzanie elementu: " + entity.Content);
+                // Console.WriteLine($"[XML]\t[{tagName}]\tPrzetwarzanie elementu: " + entity.Content);
                 var xmlElement = xmlDoc.CreateElement(tagName);
                 xmlElement.InnerText = entity.Content;
+                //xmlElement.SetAttribute("debugLegalRef", entity.LegalReference.ToString());
 
                 switch (typeof(T).Name)
                 {
@@ -481,6 +482,8 @@ namespace WordParserLibrary
                         var article = element as Article;
                         if (article != null)
                         {
+                            // Treść artykułu z jednym ustępem w pierwszym ustępie
+                            xmlElement.InnerText = string.Empty;
                             xmlElement.SetAttribute(XMLConstants.Number, article.Number);
                             xmlElement.SetAttribute(XMLConstants.Amending, article.IsAmending ? "1" : "0");
                             if (article.IsAmending)
@@ -520,9 +523,9 @@ namespace WordParserLibrary
                         break;
                     case nameof(Amendment):
                         var amendment = element as Amendment;
-                        if (amendment != null && amendment.AmendedAct != null)
+                        if (amendment != null)
                         {
-                            xmlElement.SetAttribute("ustawaZmieniana", amendment.AmendedAct);
+                            xmlElement.SetAttribute("ustawaZmieniana", amendment.LegalReference.ToString());
                         }
                         break;
                     default:
@@ -551,7 +554,7 @@ namespace WordParserLibrary
                 amendmentElement.SetAttribute("typ", ao.Type.ToDescription());
                 if (ao.AmendmentTarget != null)
                 {
-                    amendmentElement.SetAttribute("ustawa", ao.AmendmentTarget.ToString());
+                    amendmentElement.SetAttribute("ustawa", ao.AmendmentTarget.PublicationYear + ":" + ao.AmendmentTarget.PublicationNumber);   
                 }
                 if (ao.AmendmentTarget?.Article != null)
                 {
@@ -568,6 +571,10 @@ namespace WordParserLibrary
                 if (ao.AmendmentTarget?.Letter != null)
                 {
                     amendmentElement.SetAttribute("litera", ao.AmendmentTarget.Letter);
+                }
+                if (ao.AmendmentObject != null)
+                {
+                    amendmentElement.InnerText = ao.AmendmentObject;
                 }
                 parentElement.AppendChild(amendmentElement);
             }

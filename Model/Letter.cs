@@ -8,10 +8,14 @@ namespace WordParserLibrary.Model
         public List<Tiret> Tirets { get; set; }
         public string Ordinal { get; set; }
         public List<Amendment> Amendments { get; set; }
+        public string AmendedArticle { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public AmendmentOperationType AmendmentOperationType { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public Letter(Paragraph paragraph, Point parent) : base(paragraph, parent)
         {
-            Ordinal = Content.ExtractOrdinal();
+            var parsedLetter = ParseOrdinal(Content);
+            Ordinal = parsedLetter[1].Value;
+            Content = parsedLetter[2].Value;
             Tirets = new List<Tiret>();
             Amendments = new List<Amendment>();
             bool isAdjacent = true;
@@ -37,6 +41,11 @@ namespace WordParserLibrary.Model
                 }
                 paragraph = nextParagraph;
             }
+        }
+
+        private object ParseLetter(string content)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -15,10 +15,20 @@ namespace WordParserLibrary.Model
 
         public Article(Paragraph paragraph) : base(paragraph, null)
         {
-            ParseArticle(paragraph.InnerText.Sanitize());
+            var parsedArticle = ParseArticle(Content);
+            Number = parsedArticle[1].Value;
+            Content = parsedArticle[2].Value;
             IsAmending = SetAmendment();
-            Subsections = [new Subsection(paragraph, this)];
             AmendmentList = new List<string>();
+            if (IsAmending)
+            {
+                LegalReference.PublicationNumber = PublicationNumber;
+                LegalReference.PublicationYear = PublicationYear;
+            }
+
+            var firstSubsection = new Subsection(paragraph, this);
+            firstSubsection.Content = parsedArticle[2].Value;
+            Subsections = [firstSubsection];
             var ordinal = 1;
             while (paragraph.NextSibling() is Paragraph nextParagraph 
                     && nextParagraph.StyleId("ART") != true)
@@ -32,11 +42,10 @@ namespace WordParserLibrary.Model
             }
         }
 
-        void ParseArticle(string text)
+        GroupCollection ParseArticle(string text)
         {
             var match = Regex.Match(text, @"Art\. ([\w\d]+)+\.?\s*(.*)");
-            Number = match.Success ? match.Groups[1].Value : "Unknown";
-            Content = match.Success ? match.Groups[2].Value : string.Empty;
+            return match.Groups;
         }
 
         bool SetAmendment()
