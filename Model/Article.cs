@@ -27,16 +27,13 @@ namespace WordParserLibrary.Model
             }
             // Każdy artykuł zawiera co najmniej jeden ustęp, którego treść jest zawarta w treści artykułu
             var firstSubsection = new Subsection(paragraph, this);
-            firstSubsection.Content = parsedArticle[2].Value;
             Subsections = [firstSubsection];
-            var ordinal = 1;
             while (paragraph.NextSibling() is Paragraph nextParagraph 
                     && nextParagraph.StyleId("ART") != true)
             {
                 if (nextParagraph.StyleId("UST") == true)
                 {
-                    ordinal++;
-                    Subsections.Add(new Subsection(nextParagraph, this, ordinal));
+                    Subsections.Add(new Subsection(nextParagraph, this));
                 }
                 paragraph = nextParagraph;
             }

@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace WordParserLibrary.Model
 {
      public class Subsection : BaseEntity, IAmendable {
         public List<Point> Points { get; set; }
-        public int Number { get; set; }
+        public string Number { get; set; }
         public List<Amendment> Amendments { get; set; }
 
         /// <summary>
@@ -15,9 +16,11 @@ namespace WordParserLibrary.Model
         /// <param name="paragraph">The paragraph associated with this subsection.</param>
         /// <param name="article">The parent article of this subsection.</param>
         /// <param name="ordinal">The ordinal number of this subsection. Default is 1.</param>
-        public Subsection(Paragraph paragraph, Article article, int ordinal = 1) : base(paragraph, article)
+        public Subsection(Paragraph paragraph, Article article) : base(paragraph, article)
         {
-            Number = ordinal;
+            var parsedSubsection = ParseSubsection(Content);
+            Number = parsedSubsection[0];
+            Content = parsedSubsection[1];
             Points = new List<Point>();
             Amendments = new List<Amendment>();
             bool isAdjacent = true;
@@ -39,6 +42,38 @@ namespace WordParserLibrary.Model
                     isAdjacent = false;
                 }
                 paragraph = nextParagraph;
+            }
+        }
+        private string[] ParseSubsection(string text)
+        {
+            if (text.StartsWith("Art."))
+            {
+                // Dopasowanie do formatu: Art. X. Y. text
+                var matchWithY = Regex.Match(text, @"^Art\.\s\d+\.\s(\d+\w*)\.\s(.*)$");
+                if (matchWithY.Success)
+                {
+                    return new string[] { matchWithY.Groups[1].Value, matchWithY.Groups[2].Value };
+                }
+
+                // Dopasowanie do formatu: Art. X. text
+                var matchWithoutY = Regex.Match(text, @"^Art\.\s\d+\.\s(.*)$");
+                if (matchWithoutY.Success)
+                {
+                    return new string[] { "1", matchWithoutY.Groups[1].Value };
+                }
+
+                throw new FormatException("The text format is invalid for an article.");
+            }
+            else
+            {
+                // Dopasowanie do formatu: Y. text
+                var match = Regex.Match(text, @"^(\d+\w*)\.\s(.*)$");
+                if (match.Success)
+                {
+                    return new string[] { match.Groups[1].Value, match.Groups[2].Value };
+                }
+
+                throw new FormatException("The text format is invalid.");
             }
         }
     }
