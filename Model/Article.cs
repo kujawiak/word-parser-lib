@@ -25,7 +25,7 @@ namespace WordParserLibrary.Model
                 LegalReference.PublicationNumber = PublicationNumber;
                 LegalReference.PublicationYear = PublicationYear;
             }
-
+            // Każdy artykuł zawiera co najmniej jeden ustęp, którego treść jest zawarta w treści artykułu
             var firstSubsection = new Subsection(paragraph, this);
             firstSubsection.Content = parsedArticle[2].Value;
             Subsections = [firstSubsection];
