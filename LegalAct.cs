@@ -496,87 +496,74 @@ namespace WordParserLibrary
                         break;
                     case nameof(Subsection):
                         var subsection = element as Subsection;
-                        if (subsection?.Points != null)
-                        {
+                        if (subsection != null)
                             xmlElement.SetAttribute(XMLConstants.Number, subsection.Number.ToString());
+                        if (subsection?.Points != null)
                             ProcessElements<Point>(xmlDoc, xmlElement, subsection.Points);
-                        }
                         break;
                     case nameof(Point):
                         var point = element as Point;
-                        if (point?.Letters != null)
-                        {
+                        if (point != null)
                             xmlElement.SetAttribute(XMLConstants.Number, point.Number);
+                        if (point?.Letters != null)
                             ProcessElements<Letter>(xmlDoc, xmlElement, point.Letters);
-                        }
                         break;
                     case nameof(Letter):
                         var letter = element as Letter;
-                        if (letter?.Tirets != null)
-                        {
+                        if (letter != null)
                             xmlElement.SetAttribute(XMLConstants.LetterOrdinal, letter.Ordinal);
+                        if (letter?.Tirets != null)
                             ProcessElements<Tiret>(xmlDoc, xmlElement, letter.Tirets);
-                        }
                         break;
                     case nameof(Tiret):
-                        // Do nothing
+                        var tiret = element as Tiret;
+                        if (tiret != null)
+                            xmlElement.SetAttribute(XMLConstants.Number, tiret.Number.ToString());
                         break;
                     case nameof(Amendment):
-                        var amendment = element as Amendment;
-                        if (amendment != null)
-                        {
-                            xmlElement.SetAttribute("ustawaZmieniana", amendment.LegalReference.ToString());
-                        }
+                        // var amendment = element as Amendment;
+                        // if (amendment != null)
+                        // {
+                        //     xmlElement.SetAttribute("ustawaZmieniana", amendment.LegalReference.ToString());
+                        // }
                         break;
                     default:
                         Console.WriteLine($"[XML]\t[ERROR]\tNieobsługiwany typ elementu: {typeof(T).Name}");
                         break;
                 }
+                // Przetwarzanie AmendmentOperations
                 if (entity.AmendmentOperations != null && entity.AmendmentOperations.Any())
                 {
-                    ProcessAmendments(xmlDoc, xmlElement, entity.AmendmentOperations);
-                }
-                var amendable = entity as IAmendable;
-                if (amendable != null && amendable.Amendments.Any())
-                {
-                    // entity.AmendmentOperations.FirstOrDefault();
-                    ProcessElements<Amendment>(xmlDoc, xmlElement, amendable.Amendments);
+                    foreach (var amendmentOperation in entity.AmendmentOperations)
+                    {
+                        var amendmentOperationElement = xmlDoc.CreateElement(XMLConstants.AmendmentOperation);
+                        amendmentOperationElement.SetAttribute("typ", amendmentOperation.Type.ToDescription());
+
+                        if (amendmentOperation.AmendmentTarget != null)
+                        {
+                            amendmentOperationElement.SetAttribute("ustawa", amendmentOperation.AmendmentTarget.PublicationYear + ":" + amendmentOperation.AmendmentTarget.PublicationNumber);
+                            if (amendmentOperation.AmendmentTarget.Article != null)
+                                amendmentOperationElement.SetAttribute("artykul", amendmentOperation.AmendmentTarget.Article);
+                            if (amendmentOperation.AmendmentTarget.Subsection != null)
+                                amendmentOperationElement.SetAttribute("ustep", amendmentOperation.AmendmentTarget.Subsection);
+                            if (amendmentOperation.AmendmentTarget.Point != null)
+                                amendmentOperationElement.SetAttribute("punkt", amendmentOperation.AmendmentTarget.Point);
+                            if (amendmentOperation.AmendmentTarget.Letter != null)
+                                amendmentOperationElement.SetAttribute("litera", amendmentOperation.AmendmentTarget.Letter);
+                            if (amendmentOperation.AmendmentObject != null)
+                                amendmentOperationElement.SetAttribute("obiektZmiany", amendmentOperation.AmendmentObject);
+                        }
+
+                        // Zagnieżdżenie Amendment pod AmendmentOperation
+                        if (entity is IAmendable amendable && amendable.Amendments.Any())
+                        {
+                            ProcessElements<Amendment>(xmlDoc, amendmentOperationElement, amendable.Amendments);
+                        }
+
+                        xmlElement.AppendChild(amendmentOperationElement);
+                    }
                 }
                 parentElement.AppendChild(xmlElement);
-            }
-        }
-    
-        private void ProcessAmendments(XmlDocument xmlDoc, XmlElement parentElement, IEnumerable<AmendmentOperation> amendmentOperations)
-        {
-            foreach (var ao in amendmentOperations)
-            {
-                var amendmentElement = xmlDoc.CreateElement(XMLConstants.AmendmentOperation);
-                amendmentElement.SetAttribute("typ", ao.Type.ToDescription());
-                if (ao.AmendmentTarget != null)
-                {
-                    amendmentElement.SetAttribute("ustawa", ao.AmendmentTarget.PublicationYear + ":" + ao.AmendmentTarget.PublicationNumber);   
-                }
-                if (ao.AmendmentTarget?.Article != null)
-                {
-                    amendmentElement.SetAttribute("artykul", ao.AmendmentTarget.Article);
-                }
-                if (ao.AmendmentTarget?.Subsection != null)
-                {
-                    amendmentElement.SetAttribute("ustep", ao.AmendmentTarget.Subsection);
-                }
-                if (ao.AmendmentTarget?.Point != null)
-                {
-                    amendmentElement.SetAttribute("punkt", ao.AmendmentTarget.Point);
-                }
-                if (ao.AmendmentTarget?.Letter != null)
-                {
-                    amendmentElement.SetAttribute("litera", ao.AmendmentTarget.Letter);
-                }
-                if (ao.AmendmentObject != null)
-                {
-                    amendmentElement.InnerText = ao.AmendmentObject;
-                }
-                parentElement.AppendChild(amendmentElement);
             }
         }
 

@@ -17,9 +17,11 @@ namespace WordParserLibrary.Model
         public Guid Id { get; set; } = Guid.NewGuid();
         public string Content { get; set; }
         public string Context { get; set; }
+        public string RawContent { get; set; }
         public Paragraph? Paragraph { get; set; }
         public List<AmendmentOperation> AmendmentOperations { get; set; }
         public LegalReference LegalReference { get; set; } = new LegalReference();
+
         public BaseEntity(Paragraph paragraph, BaseEntity? parent)
         {
             if (parent != null)
@@ -45,6 +47,13 @@ namespace WordParserLibrary.Model
                         Subsection = parent.Subsection;
                         Point = parent.Point;
                         break;
+                    case Tiret tiret:
+                        Tiret = tiret;
+                        Article = parent.Article;
+                        Subsection = parent.Subsection;
+                        Point = parent.Point;
+                        Letter = parent.Letter;
+                        break;
                     default:
                         throw new ArgumentException("Invalid parent type", nameof(parent));
                 }
@@ -61,9 +70,10 @@ namespace WordParserLibrary.Model
             }
             Paragraph = paragraph;
             Content = paragraph.InnerText.Sanitize();
+            RawContent = paragraph.InnerText.Sanitize();
             Context = GetContext() ?? Content;
             AmendmentOperations = new List<AmendmentOperation>();
-            if (Article != null && Article.IsAmending)
+            if (Article != null && Article.IsAmending && Paragraph.StyleId("Z") == false)
             {
                 UpdateLegalReference();
                 TryParseAmendingOperation();
@@ -122,13 +132,24 @@ namespace WordParserLibrary.Model
 
         internal void TryParseAmendingOperation()
         {
-            if (Context.Contains("uchyla się"))
+            string pattern = string.Empty;
+            
+            pattern = @"uchyla się (?<newObject>.*?)(?=[;.,]$)";
+            var match = Regex.Match(RawContent, pattern);
+            if (match.Success)
             {
-                Console.WriteLine("[BaseEntity] TryParseAmendingOperation: możliwa zmiana uchylająca: " + Content);
+                var amendmentOperation = new AmendmentOperation
+                {
+                    Type = AmendmentOperationType.Repeal,
+                    AmendmentTarget = LegalReference,
+                    AmendmentObject = match.Groups["newObject"].Value
+                };
+                AmendmentOperations.Add(amendmentOperation);
+                //Article?.AmendmentOperations.Add(amendmentOperation);
             }
 
-            string pattern = @"dodaje się (?<newObject>.*?) w brzmieniu:";
-            Match match = Regex.Match(Context, pattern);
+            pattern = @"dodaje się (?<newObject>.*?) w brzmieniu:";
+            match = Regex.Match(RawContent, pattern);
             if (match.Success)
             {
                 var amendmentOperation = new AmendmentOperation
@@ -139,6 +160,25 @@ namespace WordParserLibrary.Model
                 };
                 //TODO: Rozbić operację na liczbę dodawanych obiektów
                 AmendmentOperations.Add(amendmentOperation);
+                //Article?.AmendmentOperations.Add(amendmentOperation);
+            }
+
+            pattern = @"\b(art\.|ust\.|pkt|lit\.)\s*\d+[a-zA-Z]?\b(?=.*otrzymuje brzmienie:)";
+            var matches = Regex.Matches(RawContent, pattern);
+            if (matches.Any())
+            {
+                var lastGroup = matches.LastOrDefault()?.Groups[0];
+                if (lastGroup != null)
+                {
+                    var amendmentOperation = new AmendmentOperation
+                    {
+                        Type = AmendmentOperationType.Modification,
+                        AmendmentTarget = LegalReference,
+                        AmendmentObject = lastGroup.Value
+                    };
+                    AmendmentOperations.Add(amendmentOperation);
+                    //Article?.AmendmentOperations.Add(amendmentOperation);
+                }
             }
         }
     }

@@ -15,6 +15,7 @@ namespace WordParserLibrary.Model
             Tiret = parent.Tiret ?? (parent as Tiret);
             Parent = parent;
             Paragraph = paragraph;
+            Parent?.Article?.AmendmentList.Add(LegalReference.ToString() + " " + Context);
         }
     }
 }

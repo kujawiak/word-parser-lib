@@ -5,6 +5,8 @@ namespace WordParserLibrary.Model
         [EnumDescription("uchylenie")]
         Repeal,
         [EnumDescription("dodanie")]
-        Insertion
+        Insertion,
+        [EnumDescription("zmianaBrzmienia")]
+        Modification
     }
 }
