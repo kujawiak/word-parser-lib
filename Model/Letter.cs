@@ -26,7 +26,7 @@ namespace WordParserLibrary.Model
                     && nextParagraph.StyleId("UST") != true
                     && nextParagraph.StyleId("ART") != true)
             {
-                if (nextParagraph.StyleId("TIRET") == true)
+                if (nextParagraph.StyleId("TIR") == true)
                 {
                     Tirets.Add(new Tiret(nextParagraph, this, tiretCount));
                     tiretCount++;
