@@ -36,12 +36,18 @@ namespace WordParserLibrary.Model
                 else if (nextParagraph.StyleId("Z") == true && isAdjacent)
                 {
                     Amendments.Add(new Amendment(nextParagraph, this));
+                    AmendmentOperations?.FirstOrDefault()?.Amendments.Add(new Amendment(nextParagraph, this));
                 }
                 else 
                 {
                     isAdjacent = false;
                 }
                 paragraph = nextParagraph;
+            }
+            if (Amendments.Any())
+            {
+                AmendmentBuilder ab = new AmendmentBuilder();
+                AmendmentOperations = ab.Build(Amendments, this);
             }
         }
         private string[] ParseSubsection(string text)

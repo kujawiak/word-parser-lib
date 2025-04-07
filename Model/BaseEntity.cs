@@ -76,7 +76,6 @@ namespace WordParserLibrary.Model
             if (Article != null && Article.IsAmending && Paragraph.StyleId("Z") == false)
             {
                 UpdateLegalReference();
-                TryParseAmendingOperation();
             }
         }
         void UpdateLegalReference()
@@ -128,58 +127,6 @@ namespace WordParserLibrary.Model
         {
             var match = Regex.Match(text, @"^([^\)]+)\)[\s]?(.*)");
             return match.Groups;
-        }
-
-        internal void TryParseAmendingOperation()
-        {
-            string pattern = string.Empty;
-            
-            pattern = @"uchyla się (?<newObject>.*?)(?=[;.,]$)";
-            var match = Regex.Match(RawContent, pattern);
-            if (match.Success)
-            {
-                var amendmentOperation = new AmendmentOperation
-                {
-                    Type = AmendmentOperationType.Repeal,
-                    AmendmentTarget = LegalReference,
-                    AmendmentObject = match.Groups["newObject"].Value
-                };
-                AmendmentOperations.Add(amendmentOperation);
-                //Article?.AmendmentOperations.Add(amendmentOperation);
-            }
-
-            pattern = @"dodaje się (?<newObject>.*?) w brzmieniu:";
-            match = Regex.Match(RawContent, pattern);
-            if (match.Success)
-            {
-                var amendmentOperation = new AmendmentOperation
-                {
-                    Type = AmendmentOperationType.Insertion,
-                    AmendmentTarget = LegalReference,
-                    AmendmentObject = match.Groups["newObject"].Value
-                };
-                //TODO: Rozbić operację na liczbę dodawanych obiektów
-                AmendmentOperations.Add(amendmentOperation);
-                //Article?.AmendmentOperations.Add(amendmentOperation);
-            }
-
-            pattern = @"\b(art\.|ust\.|pkt|lit\.)\s*\d+[a-zA-Z]?\b(?=.*otrzymuje brzmienie:)";
-            var matches = Regex.Matches(RawContent, pattern);
-            if (matches.Any())
-            {
-                var lastGroup = matches.LastOrDefault()?.Groups[0];
-                if (lastGroup != null)
-                {
-                    var amendmentOperation = new AmendmentOperation
-                    {
-                        Type = AmendmentOperationType.Modification,
-                        AmendmentTarget = LegalReference,
-                        AmendmentObject = lastGroup.Value
-                    };
-                    AmendmentOperations.Add(amendmentOperation);
-                    //Article?.AmendmentOperations.Add(amendmentOperation);
-                }
-            }
         }
     }
 }

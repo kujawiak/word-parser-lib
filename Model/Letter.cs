@@ -30,6 +30,7 @@ namespace WordParserLibrary.Model
                 {
                     Tirets.Add(new Tiret(nextParagraph, this, tiretCount));
                     tiretCount++;
+                    isAdjacent = false;
                 }
                 else if (nextParagraph.StyleId("Z") == true && isAdjacent == true)
                 {
@@ -40,6 +41,11 @@ namespace WordParserLibrary.Model
                     isAdjacent = false;
                 }
                 paragraph = nextParagraph;
+            }
+            if (Amendments.Any())
+            {
+                AmendmentBuilder ab = new AmendmentBuilder();
+                AmendmentOperations = ab.Build(Amendments, this);
             }
         }
 

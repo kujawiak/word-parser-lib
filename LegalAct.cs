@@ -551,13 +551,14 @@ namespace WordParserLibrary
                             if (amendmentOperation.AmendmentTarget.Letter != null)
                                 amendmentOperationElement.SetAttribute("litera", amendmentOperation.AmendmentTarget.Letter);
                             if (amendmentOperation.AmendmentObject != null)
-                                amendmentOperationElement.SetAttribute("obiektZmiany", amendmentOperation.AmendmentObject);
+                                amendmentOperationElement.SetAttribute("obiektZmianyId", amendmentOperation.AmendmentObject);
+                            amendmentOperationElement.SetAttribute("obiektZmianyTyp", amendmentOperation.AmendmentObjectType.ToFriendlyString());
                         }
 
                         // Zagnieżdżenie Amendment pod AmendmentOperation
-                        if (entity is IAmendable amendable && amendable.Amendments.Any())
+                        //if (entity is IAmendable amendable && amendable.Amendments.Any())
                         {
-                            ProcessElements<Amendment>(xmlDoc, amendmentOperationElement, amendable.Amendments);
+                            ProcessElements<Amendment>(xmlDoc, amendmentOperationElement, amendmentOperation.Amendments);
                         }
 
                         xmlElement.AppendChild(amendmentOperationElement);

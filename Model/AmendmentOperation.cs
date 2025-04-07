@@ -4,7 +4,9 @@ namespace WordParserLibrary.Model
     {
         public AmendmentOperationType Type { get; set; }
         public LegalReference AmendmentTarget { get; set; } = new LegalReference();
-        public string AmendmentObject { get; set; }
+        public string AmendmentObject { get; set; } = string.Empty;
+        public AmendmentObjectType AmendmentObjectType { get; set; }
+        public List<Amendment> Amendments { get; set; } = new List<Amendment>();
 
         public override string ToString()
         {

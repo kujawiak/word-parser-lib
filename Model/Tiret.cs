@@ -29,6 +29,11 @@ namespace WordParserLibrary.Model
                 }
                 paragraph = nextParagraph;
             }
+            if (Amendments.Any())
+            {
+                AmendmentBuilder ab = new AmendmentBuilder();
+                AmendmentOperations = ab.Build(Amendments, this);
+            }
         }
     }
 }
