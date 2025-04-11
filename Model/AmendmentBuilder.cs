@@ -20,23 +20,20 @@ namespace WordParserLibrary.Model
 
             var amendmentOperations = new List<AmendmentOperation>();
 
-            // Ustal typ operacji na podstawie treści Content obiektu BaseEntity
-            var operationType = DetermineOperationType(baseEntity.Content);
+            var ao = FindAmendmentOperation(baseEntity.Content);
 
-            // Dopasowanie obiektów na podstawie wzorców
-            var targets = ParseTargets(baseEntity.Content);
+            var targets = ParseTargets(ao);
 
             // Utwórz operacje nowelizujące dla każdego targetu
             foreach (var target in targets)
             {
                 var amendmentOperation = new AmendmentOperation
                 {
-                    Type = operationType.OperationType,
+                    Type = ao.OperationType,
                     AmendmentTarget = baseEntity.LegalReference,
                     AmendmentObject = target,
-                    AmendmentObjectType = DetermineAmendmentObjectType(baseEntity.Content)
+                    AmendmentObjectType = ao.ObjectType
                 };
-                //amendmentOperation.Amendments.AddRange(amendments);
                 amendmentOperations.Add(amendmentOperation);
             }
             
@@ -46,11 +43,16 @@ namespace WordParserLibrary.Model
             }
             else if (amendmentOperations.Count > 1)
             {
+                // W przypadku wielu operacji nowelizujących, przypisz odpowiednie poprawki do każdej operacji
                 var allAmendmets = amendments.ToList();
                 var firstAmendment = allAmendmets.FirstOrDefault();
                 var style = firstAmendment?.Paragraph != null ? firstAmendment.Paragraph.StyleId() : null;
                 foreach (var operation in amendmentOperations)
                 {
+                    if (operation.Type == AmendmentOperationType.Repeal)
+                    {
+                        break;
+                    }
                     operation.Amendments.Add(allAmendmets.First());
                     allAmendmets.RemoveAt(0);
                     while (allAmendmets.Any())
@@ -66,23 +68,44 @@ namespace WordParserLibrary.Model
             }
             return amendmentOperations;
         }
-        private (AmendmentOperationType OperationType, string? NewObject) DetermineOperationType(string content)
+        private AmendmentTarget FindAmendmentOperation(string content)
         {
             var repealMatch = Regex.Match(content, @"uchyla się (?<newObject>.*?)(?=[;.,]$)");
             if (repealMatch.Success)
-            return (AmendmentOperationType.Repeal, repealMatch.Groups["newObject"].Value);
+            //return (AmendmentOperationType.Repeal, repealMatch.Groups["newObject"].Value);
+                return new AmendmentTarget() {
+                    OperationType = AmendmentOperationType.Repeal,
+                    ObjectType = DetermineAmendmentObjectType(repealMatch.Groups["newObject"].Value),
+                    Target = repealMatch.Groups["newObject"].Value
+                };
+
 
             var insertionMatch = Regex.Match(content, @"dodaje się (?<newObject>.*?) w brzmieniu:");
             if (insertionMatch.Success)
-            return (AmendmentOperationType.Insertion, insertionMatch.Groups["newObject"].Value);
+            //return (AmendmentOperationType.Insertion, insertionMatch.Groups["newObject"].Value);
+                return new AmendmentTarget() {
+                    OperationType = AmendmentOperationType.Insertion,
+                    ObjectType = DetermineAmendmentObjectType(insertionMatch.Groups["newObject"].Value),
+                    Target = insertionMatch.Groups["newObject"].Value
+                };
 
             var modificationMatch = Regex.Match(content, @"\b(art\.|ust\.|pkt)\s*\d+[a-zA-Z]?\b(?=.*otrzymuj[e,ą] brzmienie:)");
             if (modificationMatch.Success)
-            return (AmendmentOperationType.Modification, modificationMatch.Value);
+            // return (AmendmentOperationType.Modification, modificationMatch.Value);
+                return new AmendmentTarget() {
+                    OperationType = AmendmentOperationType.Modification,
+                    ObjectType = DetermineAmendmentObjectType(modificationMatch.Value),
+                    Target = modificationMatch.Value
+                };
 
             var letterModificationMatch = Regex.Match(content, @"lit\.\s*[a-zA-Z]+(?=.*otrzymuj[e,ą] brzmienie:)");
             if (letterModificationMatch.Success)
-            return (AmendmentOperationType.Modification, letterModificationMatch.Value);
+            // return (AmendmentOperationType.Modification, letterModificationMatch.Value);
+                return new AmendmentTarget() {
+                    OperationType = AmendmentOperationType.Modification,
+                    ObjectType = DetermineAmendmentObjectType(letterModificationMatch.Value),
+                    Target = letterModificationMatch.Value
+                };
 
             throw new InvalidOperationException("Unable to determine AmendmentOperationType or extract NewObject from content.");
         }
@@ -105,59 +128,54 @@ namespace WordParserLibrary.Model
 
             return AmendmentObjectType.None;
         }
-        private List<string> ParseTargets(string content)
+        private List<string> ParseTargets(AmendmentTarget target)
         {
             var targets = new List<string>();
 
-            // Wyodrębnij <newObject> za pomocą regexów z TryParseAmendingOperation
-            string? newObject = ExtractNewObject(content);
-
-            if (string.IsNullOrEmpty(newObject))
-                return targets;
-
             // Parsuj <newObject> pod kątem zakresów, list i pojedynczych targetów
             // Obsługa zakresów, np. "24-26"
-            var rangeMatch = Regex.Match(newObject, @"(\d+[a-zA-Z]?)-(\d+[a-zA-Z]?)");
+            var rangeMatch = Regex.Match(target.Target, @"(\d+[a-zA-Z]?)-(\d+[a-zA-Z]?)");
             if (rangeMatch.Success)
             {
                 var start = rangeMatch.Groups[1].Value;
                 var end = rangeMatch.Groups[2].Value;
                 targets.AddRange(GenerateRange(start, end));
+                return targets;
             }
 
             // Obsługa listy, np. "4a i 4b"
-            var listMatch = Regex.Match(newObject, @"((\d+[a-zA-Z]?)\s(i\s\d+[a-zA-Z]?)+)");
+            var listMatch = Regex.Match(target.Target, @"((\d+[a-zA-Z]?)\s(i\s\d+[a-zA-Z]?)+)");
             if (listMatch.Success)
             {
                 var items = listMatch.Groups[1].Value.Split(new[] { " i " }, StringSplitOptions.RemoveEmptyEntries);
                 targets.AddRange(items.Select(item => item.Trim()));
+                return targets;
+            }
+
+            // Obsługa paragrafu z wieloma elementami, np. "uchyla się art. 126 i art. 126a;"
+            var multipleTargetsMatch = Regex.Matches(target.Target, @"\b((art\.|ust\.|pkt|lit\.)\s*\d+[a-zA-Z]?)\b");
+            if (multipleTargetsMatch.Count > 0)
+            {
+                foreach (Match match in multipleTargetsMatch)
+                {
+                    var t = match.Value.Trim();
+                    if (!targets.Contains(t))
+                    {
+                        var cleanedTarget = Regex.Replace(t, @"^(art\.|ust\.|pkt|lit\.)\s*", string.Empty);
+                        targets.Add(cleanedTarget);
+                    }
+                }
+                return targets;
             }
 
             // Obsługa pojedynczego targetu, np. "3b"
-            var singleTargetMatch = Regex.Match(newObject, @"\b(\d+[a-zA-Z]?)\b");
+            var singleTargetMatch = Regex.Match(target.Target, @"\b(\d+[a-zA-Z]?)\b");
             if (singleTargetMatch.Success && !targets.Contains(singleTargetMatch.Groups[1].Value))
             {
                 targets.Add(singleTargetMatch.Groups[1].Value);
             }
 
             return targets;
-        }
-        private string? ExtractNewObject(string content)
-        {
-            // Sprawdź różne wzorce, aby wyodrębnić <newObject>
-            var repealMatch = Regex.Match(content, @"uchyla się (?<newObject>.*?)(?=[;.,]$)");
-            if (repealMatch.Success)
-                return repealMatch.Groups["newObject"].Value;
-
-            var insertionMatch = Regex.Match(content, @"dodaje się (?<newObject>.*?) w brzmieniu:");
-            if (insertionMatch.Success)
-                return insertionMatch.Groups["newObject"].Value;
-
-            var modificationMatch = Regex.Match(content, @"\b(art\.|ust\.|pkt|lit\.)\s*(?<newObject>\d+[a-zA-Z]?)\b(?=.*otrzymuje brzmienie:)");
-            if (modificationMatch.Success)
-                return modificationMatch.Groups["newObject"].Value;
-
-            return null;
         }
         private List<string> GenerateRange(string start, string end)
         {

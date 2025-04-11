@@ -128,5 +128,10 @@ namespace WordParserLibrary.Model
             var match = Regex.Match(text, @"^([^\)]+)\)[\s]?(.*)");
             return match.Groups;
         }
+
+        public bool IsAmendmentOperation()
+        {
+            return Content.Contains("uchyla się");
+        }
     }
 }

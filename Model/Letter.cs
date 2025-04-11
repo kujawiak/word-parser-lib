@@ -42,16 +42,15 @@ namespace WordParserLibrary.Model
                 }
                 paragraph = nextParagraph;
             }
+            if (IsAmendmentOperation())
+            {
+                Amendments.Add(new Amendment(paragraph, this));
+            }
             if (Amendments.Any())
             {
                 AmendmentBuilder ab = new AmendmentBuilder();
                 AmendmentOperations = ab.Build(Amendments, this);
             }
-        }
-
-        private object ParseLetter(string content)
-        {
-            throw new NotImplementedException();
         }
     }
 }

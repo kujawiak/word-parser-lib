@@ -44,6 +44,10 @@ namespace WordParserLibrary.Model
                 }
                 paragraph = nextParagraph;
             }
+            if (IsAmendmentOperation())
+            {
+                Amendments.Add(new Amendment(paragraph, this));
+            }
             if (Amendments.Any())
             {
                 AmendmentBuilder ab = new AmendmentBuilder();
@@ -58,14 +62,14 @@ namespace WordParserLibrary.Model
                 var matchWithY = Regex.Match(text, @"^Art\.\s\d+\.\s(\d+\w*)\.\s(.*)$");
                 if (matchWithY.Success)
                 {
-                    return new string[] { matchWithY.Groups[1].Value, matchWithY.Groups[2].Value };
+                    return [matchWithY.Groups[1].Value, matchWithY.Groups[2].Value];
                 }
 
                 // Dopasowanie do formatu: Art. X. text
                 var matchWithoutY = Regex.Match(text, @"^Art\.\s\d+\.\s(.*)$");
                 if (matchWithoutY.Success)
                 {
-                    return new string[] { "1", matchWithoutY.Groups[1].Value };
+                    return ["1", matchWithoutY.Groups[1].Value];
                 }
 
                 throw new FormatException("The text format is invalid for an article.");
@@ -76,7 +80,7 @@ namespace WordParserLibrary.Model
                 var match = Regex.Match(text, @"^(\d+\w*)\.\s(.*)$");
                 if (match.Success)
                 {
-                    return new string[] { match.Groups[1].Value, match.Groups[2].Value };
+                    return [match.Groups[1].Value, match.Groups[2].Value];
                 }
 
                 throw new FormatException("The text format is invalid.");
