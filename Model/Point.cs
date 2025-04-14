@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace WordParserLibrary.Model
 {
-    public class Point : BaseEntity, IAmendable {
+    public class Point : BaseEntity, IAmendable, IXmlConvertible {
         public List<Letter> Letters { get; set; }
         public List<Amendment> Amendments { get; set; }
         public string Number { get; set; }
@@ -46,6 +47,30 @@ namespace WordParserLibrary.Model
                 AmendmentBuilder ab = new AmendmentBuilder();
                 AmendmentOperations = ab.Build(Amendments, this);
             }
+        }
+
+        public XElement ToXML()
+        {
+            var newElement = new XElement(XMLConstants.Point,
+                new XAttribute("guid", Guid),
+                new XAttribute("id", BuildId()));
+            newElement.AddFirst(new XElement(XMLConstants.Number, Number));
+            newElement.Add(new XElement("text", Content));
+            foreach (var letter in Letters)
+            {
+                newElement.Add(letter.ToXML());
+            }
+            foreach (var amendmentOperation in AmendmentOperations)
+            {
+                newElement.Add(amendmentOperation.ToXML());
+            }
+            return newElement;
+        }
+
+        public string BuildId()
+        {
+            var parentId = (Parent as Subsection)?.BuildId();
+            return parentId != null ? $"{parentId}.pkt_{Number}" : $"pkt_{Number}";
         }
     }
 }

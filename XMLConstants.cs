@@ -12,7 +12,7 @@ namespace WordParserLibrary
         public const string Tiret = "tiret";
         public const string Amendment = "nowelizacja";
 
-        public const string Number = "numer";
+        public const string Number = "num";
         public const string Amending = "nowelizujacy";
         public const string PublicationYear = "publikatorRok";
         public const string PublicationNumber = "publikatorNumer";

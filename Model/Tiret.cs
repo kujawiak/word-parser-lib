@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Xml.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace WordParserLibrary.Model
 {
-        public class Tiret : BaseEntity, IAmendable {
+        public class Tiret : BaseEntity, IAmendable, IXmlConvertible {
         public int Number { get; set; }
         public List<Amendment> Amendments { get; set; }
         public Tiret(Paragraph paragraph, Letter parent, int ordinal = 1) : base(paragraph, parent)
@@ -38,6 +39,25 @@ namespace WordParserLibrary.Model
                 AmendmentBuilder ab = new AmendmentBuilder();
                 AmendmentOperations = ab.Build(Amendments, this);
             }
+        }
+    
+        public XElement ToXML()
+        {
+            var newElement = new XElement(XMLConstants.Tiret,
+                new XAttribute("guid", Guid),
+                new XAttribute("id", BuildId()));
+            newElement.AddFirst(new XElement(XMLConstants.Number, Number));
+            newElement.Add(new XElement("text", Content));
+            foreach (var amendmentOperation in AmendmentOperations)
+            {
+                newElement.Add(amendmentOperation.ToXML());
+            }
+            return newElement;
+        }
+        public string BuildId()
+        {
+            var parentId = (Parent as Letter)?.BuildId();
+            return parentId != null ? $"{parentId}.tir_{Number}" : $"tir_{Number}";
         }
     }
 }

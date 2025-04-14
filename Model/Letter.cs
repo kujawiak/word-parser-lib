@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Xml.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace WordParserLibrary.Model
 {
-        public class Letter : BaseEntity, IAmendable {
+        public class Letter : BaseEntity, IAmendable, IXmlConvertible {
         public List<Tiret> Tirets { get; set; }
         public string Ordinal { get; set; }
         public List<Amendment> Amendments { get; set; }
@@ -51,6 +52,29 @@ namespace WordParserLibrary.Model
                 AmendmentBuilder ab = new AmendmentBuilder();
                 AmendmentOperations = ab.Build(Amendments, this);
             }
+        }
+    
+        public XElement ToXML()
+        {
+            var newElement = new XElement(XMLConstants.Letter,
+                new XAttribute("guid", Guid),
+                new XAttribute("id", BuildId()));
+            newElement.AddFirst(new XElement(XMLConstants.Number, Ordinal));
+            newElement.Add(new XElement("text", Content));
+            foreach (var tiret in Tirets)
+            {
+                newElement.Add(tiret.ToXML());
+            }
+            foreach (var amendmentOperation in AmendmentOperations)
+            {
+                newElement.Add(amendmentOperation.ToXML());
+            }
+            return newElement;
+        }
+        public string BuildId()
+        {
+            var parentId = (Parent as Point)?.BuildId();
+            return parentId != null ? $"{parentId}.lit_{Ordinal}" : $"lit_{Ordinal}";
         }
     }
 }

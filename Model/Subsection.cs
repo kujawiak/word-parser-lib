@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace WordParserLibrary.Model
 {
-     public class Subsection : BaseEntity, IAmendable {
+     public class Subsection : BaseEntity, IAmendable, IXmlConvertible {
         public List<Point> Points { get; set; }
         public string Number { get; set; }
         public List<Amendment> Amendments { get; set; }
@@ -85,6 +86,30 @@ namespace WordParserLibrary.Model
 
                 throw new FormatException("The text format is invalid.");
             }
+        }
+
+        public XElement ToXML()
+        {
+            var newElement = new XElement(XMLConstants.Subsection,
+                new XAttribute("guid", Guid),
+                new XAttribute("id", BuildId()));
+            newElement.AddFirst(new XElement(XMLConstants.Number, Number));
+            newElement.Add(new XElement("text", Content));
+            foreach (var point in Points)
+            {
+                newElement.Add(point.ToXML());
+            }
+            foreach (var amendmentOperation in AmendmentOperations)
+            {
+                newElement.Add(amendmentOperation.ToXML());
+            }
+            return newElement;
+        }
+
+        public string BuildId()
+        {
+            var parentId = (Parent as Article)?.BuildId();
+            return parentId != null ? $"{parentId}.ust_{Number}" : $"ust_{Number}";
         }
     }
 }

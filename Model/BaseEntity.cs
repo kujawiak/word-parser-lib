@@ -14,7 +14,7 @@ namespace WordParserLibrary.Model
         public Point? Point { get; set; }
         public Letter? Letter { get; set; }
         public Tiret? Tiret { get; set; }
-        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid Guid { get; set; } = Guid.NewGuid();
         public string Content { get; set; }
         public string Context { get; set; }
         public string RawContent { get; set; }

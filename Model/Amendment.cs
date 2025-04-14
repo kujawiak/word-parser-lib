@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Xml.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace WordParserLibrary.Model
 {
-    public class Amendment : BaseEntity
+    public class Amendment : BaseEntity, IXmlConvertible
     {
         public Amendment(Paragraph paragraph, BaseEntity parent) : base(paragraph, parent)
         {
@@ -17,6 +18,15 @@ namespace WordParserLibrary.Model
             Paragraph = paragraph;
             //TODO: For testing purposes only
             Parent?.Article?.AmendmentList.Add(LegalReference.ToString() + " " + Context);
+        }
+
+        public XElement ToXML()
+        {
+            var amendmentElement = new XElement("amendment",
+                //new XAttribute("reference", LegalReference.ToString()),
+                new XElement("content", Content)
+            );
+            return amendmentElement;
         }
     }
 }

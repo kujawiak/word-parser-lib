@@ -442,7 +442,15 @@ namespace WordParserLibrary
             var xmlDoc = new System.Xml.XmlDocument();
             var rootElement = xmlDoc.CreateElement(XMLConstants.Root);
 
-            ProcessElements<Article>(xmlDoc, rootElement, Articles);
+            //ProcessElements<Article>(xmlDoc, rootElement, Articles);
+
+            foreach (var article in Articles)
+            {
+                // Konwertuj XElement na XmlElement
+                var articleElement = article.ToXML().ToXmlElement();
+                var importedNode = xmlDoc.ImportNode(articleElement, true);
+                rootElement.AppendChild(importedNode);
+            }
 
             xmlDoc.AppendChild(rootElement);
 
@@ -460,111 +468,6 @@ namespace WordParserLibrary
                 xmlDoc.WriteTo(xmlTextWriter);
                 xmlTextWriter.Flush();
                 return stringWriter.GetStringBuilder().ToString();
-            }
-        }
-
-        private void ProcessElements<T>(XmlDocument xmlDoc, XmlElement parentElement, IEnumerable<T> elements)
-        {
-            var elementName = typeof(T).Name;
-            string tagName = XMLConstants.GetTagName(elementName);
-            foreach (var element in elements)
-            {
-                var entity = element as BaseEntity;
-                if (entity == null) continue;
-                // Console.WriteLine($"[XML]\t[{tagName}]\tPrzetwarzanie elementu: " + entity.Content);
-                var xmlElement = xmlDoc.CreateElement(tagName);
-                xmlElement.InnerText = entity.Content;
-                //xmlElement.SetAttribute("debugLegalRef", entity.LegalReference.ToString());
-
-                switch (typeof(T).Name)
-                {
-                    case nameof(Article):
-                        var article = element as Article;
-                        if (article != null)
-                        {
-                            // Treść artykułu z jednym ustępem w pierwszym ustępie
-                            xmlElement.InnerText = string.Empty;
-                            xmlElement.SetAttribute(XMLConstants.Number, article.Number);
-                            xmlElement.SetAttribute(XMLConstants.Amending, article.IsAmending ? "1" : "0");
-                            if (article.IsAmending)
-                            {
-                                xmlElement.SetAttribute(XMLConstants.PublicationYear, article.PublicationYear);
-                                xmlElement.SetAttribute(XMLConstants.PublicationNumber, article.PublicationNumber);
-                            }
-                            ProcessElements<Subsection>(xmlDoc, xmlElement, article.Subsections);
-                        }
-                        break;
-                    case nameof(Subsection):
-                        var subsection = element as Subsection;
-                        if (subsection != null)
-                            xmlElement.SetAttribute(XMLConstants.Number, subsection.Number.ToString());
-                        if (subsection?.Points != null)
-                            ProcessElements<Point>(xmlDoc, xmlElement, subsection.Points);
-                        break;
-                    case nameof(Point):
-                        var point = element as Point;
-                        if (point != null)
-                            xmlElement.SetAttribute(XMLConstants.Number, point.Number);
-                        if (point?.Letters != null)
-                            ProcessElements<Letter>(xmlDoc, xmlElement, point.Letters);
-                        break;
-                    case nameof(Letter):
-                        var letter = element as Letter;
-                        if (letter != null)
-                            xmlElement.SetAttribute(XMLConstants.LetterOrdinal, letter.Ordinal);
-                        if (letter?.Tirets != null)
-                            ProcessElements<Tiret>(xmlDoc, xmlElement, letter.Tirets);
-                        break;
-                    case nameof(Tiret):
-                        var tiret = element as Tiret;
-                        if (tiret != null)
-                            xmlElement.SetAttribute(XMLConstants.Number, tiret.Number.ToString());
-                        break;
-                    case nameof(Amendment):
-                        // var amendment = element as Amendment;
-                        // if (amendment != null)
-                        // {
-                        //     xmlElement.SetAttribute("ustawaZmieniana", amendment.LegalReference.ToString());
-                        // }
-                        break;
-                    default:
-                        Console.WriteLine($"[XML]\t[ERROR]\tNieobsługiwany typ elementu: {typeof(T).Name}");
-                        break;
-                }
-                // Przetwarzanie AmendmentOperations
-                if (entity.AmendmentOperations != null && entity.AmendmentOperations.Any())
-                {
-                    foreach (var amendmentOperation in entity.AmendmentOperations)
-                    {
-                        var amendmentOperationElement = xmlDoc.CreateElement(XMLConstants.AmendmentOperation);
-                        amendmentOperationElement.SetAttribute("typ", amendmentOperation.Type.ToDescription());
-
-                        if (amendmentOperation.AmendmentTarget != null)
-                        {
-                            amendmentOperationElement.SetAttribute("ustawa", amendmentOperation.AmendmentTarget.PublicationYear + ":" + amendmentOperation.AmendmentTarget.PublicationNumber);
-                            if (amendmentOperation.AmendmentTarget.Article != null)
-                                amendmentOperationElement.SetAttribute("artykul", amendmentOperation.AmendmentTarget.Article);
-                            if (amendmentOperation.AmendmentTarget.Subsection != null)
-                                amendmentOperationElement.SetAttribute("ustep", amendmentOperation.AmendmentTarget.Subsection);
-                            if (amendmentOperation.AmendmentTarget.Point != null)
-                                amendmentOperationElement.SetAttribute("punkt", amendmentOperation.AmendmentTarget.Point);
-                            if (amendmentOperation.AmendmentTarget.Letter != null)
-                                amendmentOperationElement.SetAttribute("litera", amendmentOperation.AmendmentTarget.Letter);
-                            if (amendmentOperation.AmendmentObject != null)
-                                amendmentOperationElement.SetAttribute("obiektZmianyId", amendmentOperation.AmendmentObject);
-                            amendmentOperationElement.SetAttribute("obiektZmianyTyp", amendmentOperation.AmendmentObjectType.ToFriendlyString());
-                        }
-
-                        // Zagnieżdżenie Amendment pod AmendmentOperation
-                        //if (entity is IAmendable amendable && amendable.Amendments.Any())
-                        {
-                            ProcessElements<Amendment>(xmlDoc, amendmentOperationElement, amendmentOperation.Amendments);
-                        }
-
-                        xmlElement.AppendChild(amendmentOperationElement);
-                    }
-                }
-                parentElement.AppendChild(xmlElement);
             }
         }
 
