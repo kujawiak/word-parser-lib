@@ -41,16 +41,16 @@ namespace WordParserLibrary.Model
             }
         }
     
-        public XElement ToXML()
+        public XElement ToXML(bool generateGuids)
         {
             var newElement = new XElement(XMLConstants.Tiret,
-                new XAttribute("guid", Guid),
                 new XAttribute("id", BuildId()));
+            if (generateGuids) newElement.Add(new XAttribute("guid", Guid));
             newElement.AddFirst(new XElement(XMLConstants.Number, Number));
             newElement.Add(new XElement("text", Content));
             foreach (var amendmentOperation in AmendmentOperations)
             {
-                newElement.Add(amendmentOperation.ToXML());
+                newElement.Add(amendmentOperation.ToXML(generateGuids));
             }
             return newElement;
         }

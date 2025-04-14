@@ -15,7 +15,7 @@ namespace WordParserLibrary.Model
             return $"{Type}, {AmendmentTarget}, {AmendmentObject}";
         }
 
-        public XElement ToXML()
+        public XElement ToXML(bool generateGuids)
         {
             var newElement = new XElement("amendmentOperation",
                 new XElement("type", Type.ToString()),
@@ -29,7 +29,7 @@ namespace WordParserLibrary.Model
                 newElement.Add(amendmentsElement);
                 foreach (var amendment in Amendments)
                 {
-                    amendmentsElement.Add(amendment.ToXML());
+                    amendmentsElement.Add(amendment.ToXML(generateGuids));
                 }
             }
             return newElement;

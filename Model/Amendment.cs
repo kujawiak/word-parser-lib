@@ -20,7 +20,7 @@ namespace WordParserLibrary.Model
             Parent?.Article?.AmendmentList.Add(LegalReference.ToString() + " " + Context);
         }
 
-        public XElement ToXML()
+        public XElement ToXML(bool generateGuids)
         {
             var amendmentElement = new XElement("amendment",
                 //new XAttribute("reference", LegalReference.ToString()),

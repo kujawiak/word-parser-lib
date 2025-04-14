@@ -436,7 +436,7 @@ namespace WordParserLibrary
             }
         }
        
-        public string GenerateXML()
+        public string GenerateXML(bool generateGuids = false)
         {
             CustomXmlPart xmlPart = MainPart.AddCustomXmlPart(CustomXmlPartType.CustomXml, "aktPrawny");
             var xmlDoc = new System.Xml.XmlDocument();
@@ -447,7 +447,7 @@ namespace WordParserLibrary
             foreach (var article in Articles)
             {
                 // Konwertuj XElement na XmlElement
-                var articleElement = article.ToXML().ToXmlElement();
+                var articleElement = article.ToXML(generateGuids).ToXmlElement();
                 var importedNode = xmlDoc.ImportNode(articleElement, true);
                 rootElement.AppendChild(importedNode);
             }

@@ -60,11 +60,11 @@ namespace WordParserLibrary.Model
             }
         }
 
-        public XElement ToXML()
+        public XElement ToXML(bool generateGuids)
         {
             var newElement = new XElement(XMLConstants.Article,
-                new XAttribute("guid", Guid),
                 new XAttribute("id", BuildId()));
+            if (generateGuids) newElement.Add(new XAttribute("guid", Guid));
             newElement.AddFirst(new XElement(XMLConstants.Number, Number));
             if (IsAmending)
             {
@@ -75,7 +75,7 @@ namespace WordParserLibrary.Model
             }
             foreach (var subsection in Subsections)
             {
-                newElement.Add(subsection.ToXML());
+                newElement.Add(subsection.ToXML(generateGuids));
             }
             return newElement;
         }

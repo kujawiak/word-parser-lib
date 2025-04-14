@@ -54,20 +54,20 @@ namespace WordParserLibrary.Model
             }
         }
     
-        public XElement ToXML()
+        public XElement ToXML(bool generateGuids)
         {
             var newElement = new XElement(XMLConstants.Letter,
-                new XAttribute("guid", Guid),
                 new XAttribute("id", BuildId()));
+            if (generateGuids) newElement.Add(new XAttribute("guid", Guid));
             newElement.AddFirst(new XElement(XMLConstants.Number, Ordinal));
             newElement.Add(new XElement("text", Content));
             foreach (var tiret in Tirets)
             {
-                newElement.Add(tiret.ToXML());
+                newElement.Add(tiret.ToXML(generateGuids));
             }
             foreach (var amendmentOperation in AmendmentOperations)
             {
-                newElement.Add(amendmentOperation.ToXML());
+                newElement.Add(amendmentOperation.ToXML(generateGuids));
             }
             return newElement;
         }

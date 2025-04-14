@@ -4,6 +4,6 @@ namespace WordParserLibrary.Model
 {
     public interface IXmlConvertible
     {
-        XElement ToXML();
+        XElement ToXML(bool generateGuids);
     }
 }
