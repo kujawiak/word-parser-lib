@@ -79,7 +79,6 @@ namespace WordParserLibrary.Model
                     Target = repealMatch.Groups["newObject"].Value
                 };
 
-
             var insertionMatch = Regex.Match(content, @"dodaje się (?<newObject>.*?) w brzmieniu:");
             if (insertionMatch.Success)
             //return (AmendmentOperationType.Insertion, insertionMatch.Groups["newObject"].Value);
@@ -107,7 +106,12 @@ namespace WordParserLibrary.Model
                     Target = letterModificationMatch.Value
                 };
 
-            throw new InvalidOperationException("Unable to determine AmendmentOperationType or extract NewObject from content.");
+            return new AmendmentTarget() {
+                OperationType = AmendmentOperationType.Error,
+                ObjectType = AmendmentObjectType.None,
+                Target = "Unable to determine AmendmentOperationType or extract NewObject from content."
+            };
+            //throw new InvalidOperationException("Unable to determine AmendmentOperationType or extract NewObject from content.");
         }
         private AmendmentObjectType DetermineAmendmentObjectType(string target)
         {

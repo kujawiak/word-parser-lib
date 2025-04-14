@@ -73,7 +73,8 @@ namespace WordParserLibrary.Model
                     return ["1", matchWithoutY.Groups[1].Value];
                 }
 
-                throw new FormatException("The text format is invalid for an article.");
+                //throw new FormatException("The text format is invalid for an article.");
+                return ["The text format is invalid.", text];
             }
             else
             {
@@ -84,7 +85,8 @@ namespace WordParserLibrary.Model
                     return [match.Groups[1].Value, match.Groups[2].Value];
                 }
 
-                throw new FormatException("The text format is invalid.");
+                //throw new FormatException("The text format is invalid.");
+                return ["The text format is invalid.", text];
             }
         }
 

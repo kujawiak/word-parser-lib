@@ -7,6 +7,7 @@ namespace WordParserLibrary.Model
         [EnumDescription("dodanie")]
         Insertion,
         [EnumDescription("zmianaBrzmienia")]
-        Modification
+        Modification,
+        Error
     }
 }

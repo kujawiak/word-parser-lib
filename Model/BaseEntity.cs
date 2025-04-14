@@ -69,7 +69,7 @@ namespace WordParserLibrary.Model
                 };
             }
             Paragraph = paragraph;
-            Content = paragraph.InnerText.Sanitize();
+            Content = paragraph.InnerText.Sanitize().Trim();
             RawContent = paragraph.InnerText.Sanitize();
             Context = GetContext() ?? Content;
             AmendmentOperations = new List<AmendmentOperation>();
