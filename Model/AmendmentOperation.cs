@@ -23,7 +23,7 @@ namespace WordParserLibrary.Model
                 new XElement("object", AmendmentObject),
                 new XElement("objectType", AmendmentObjectType.ToFriendlyString())
             );
-            if (Amendments.Any())
+            if (Amendments.Any() && Type != AmendmentOperationType.Repeal)
             {
                 var amendmentsElement = new XElement("amendments");
                 newElement.Add(amendmentsElement);
