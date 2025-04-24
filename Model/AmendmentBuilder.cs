@@ -53,6 +53,10 @@ namespace WordParserLibrary.Model
                     {
                         break;
                     }
+                    //TODO: Zastąpić to tymczasowe rozwiązanie bardziej kompleksowym podejściem
+                    //TODO: Ewentualnie zapewnić weryfikację dokumentu przed jego przetworzeniem
+                    if (allAmendmets.Count == 0)
+                        break;
                     operation.Amendments.Add(allAmendmets.First());
                     allAmendmets.RemoveAt(0);
                     while (allAmendmets.Any())
