@@ -413,6 +413,54 @@ namespace WordParserLibrary
             }
         }
 
+        public void Validate()
+        {
+            CleanParagraphProperties();
+            MergeRuns();
+            MergeTexts();
+        }
+
+        public MemoryStream GetStream(List<string> stringList)
+        {
+            var memoryStream = new MemoryStream();
+            if (stringList != null && stringList.Any())
+            {
+                if (stringList.Contains("REMOVE_COMMENTS"))
+                {
+                    RemoveSystemComments();
+                }
+                if (stringList.Contains("CLEANING"))
+                {
+                    CleanParagraphProperties();
+                }
+                if (stringList.Contains("RUN_MERGE"))
+                {
+                    MergeRuns();
+                }
+                if (stringList.Contains("TEXT_MERGE"))
+                {
+                    MergeTexts();
+                }
+                if (stringList.Contains("VALIDATE"))
+                {
+                    Validate();
+                }
+                if (stringList.Contains("HYPERLINKS"))
+                {
+                    ParseHyperlinks();
+                }
+                if (stringList.Contains("AMENDMENTS"))
+                {
+                    SaveAmendmentList();
+                }
+                if (stringList.Contains("XML"))
+                {
+                    GenerateXML(true);
+                }
+            }
+            _wordDoc.Clone(memoryStream);
+            return memoryStream;
+        }
         // -------------
 
         private StringValue? GetStyleID(string styleName = "Normalny")
