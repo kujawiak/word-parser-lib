@@ -1,20 +1,16 @@
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
-using System;
-using System.Collections;
-using System.Diagnostics;
 using System.IO.Packaging;
-using System.Linq;
 using System.Xml;
 using WordParserLibrary.Model;
+using Serilog;
 
 namespace WordParserLibrary
 {
     public class LegalAct
     {
-        public WordprocessingDocument _wordDoc
-         { get; }
+        public WordprocessingDocument _wordDoc  { get; }
         public MainDocumentPart MainPart { get; }
         public DocumentSettingsPart? SettingsPart { get; }
 
@@ -23,6 +19,8 @@ namespace WordParserLibrary
 
         public LegalAct(WordprocessingDocument wordDoc)
         {
+            LoggerConfig.ConfigureLogger();
+            Log.Information("[CTOR]\tTworzenie instancji LegalAct");
             _wordDoc = wordDoc;
             MainPart = _wordDoc.MainDocumentPart ?? throw new InvalidOperationException("MainDocumentPart is null.");
             Title = new Title(MainPart.Document.Descendants<Paragraph>()
@@ -487,10 +485,8 @@ namespace WordParserLibrary
         public string GenerateXML(bool generateGuids = false)
         {
             CustomXmlPart xmlPart = MainPart.AddCustomXmlPart(CustomXmlPartType.CustomXml, "aktPrawny");
-            var xmlDoc = new System.Xml.XmlDocument();
+            var xmlDoc = new XmlDocument();
             var rootElement = xmlDoc.CreateElement(XMLConstants.Root);
-
-            //ProcessElements<Article>(xmlDoc, rootElement, Articles);
 
             foreach (var article in Articles)
             {
@@ -539,6 +535,26 @@ namespace WordParserLibrary
             else
             {
                 Console.WriteLine("No amendments found to save.");
+            }
+        }
+
+        public void CommentErrors()
+        {
+            foreach (var article in Articles)
+            {
+                if (article.Error == true && article.ErrorMessage != null)
+                {
+                    var commentText = $"Błąd: {article.ErrorMessage}";
+                    AddComment(article.Paragraph, commentText);
+                }
+                foreach (var subsection in article.Subsections)
+                {
+                    if (subsection.Error == true && subsection.ErrorMessage != null)
+                    {
+                        var commentText = $"Błąd: {subsection.ErrorMessage}";
+                        AddComment(subsection.Paragraph, commentText);
+                    }
+                }
             }
         }
     }    

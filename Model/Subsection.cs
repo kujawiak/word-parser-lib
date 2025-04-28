@@ -3,31 +3,29 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
+using Serilog;
 
 namespace WordParserLibrary.Model
 {
      public class Subsection : BaseEntity, IAmendable, IXmlConvertible {
-        public List<Point> Points { get; set; }
-        public string Number { get; set; }
-        public List<Amendment> Amendments { get; set; }
+        public List<Point> Points { get; set; } = new List<Point>();
+        public string Number { get; set; }  = string.Empty;
+        public List<Amendment> Amendments { get; set; } = new List<Amendment>();
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Subsection"/> class.
-        /// </summary>
-        /// <param name="paragraph">The paragraph associated with this subsection.</param>
-        /// <param name="article">The parent article of this subsection.</param>
-        /// <param name="ordinal">The ordinal number of this subsection. Default is 1.</param>
         public Subsection(Paragraph paragraph, Article article) : base(paragraph, article)
         {
-            var parsedSubsection = ParseSubsection(Content);
-            Number = parsedSubsection[0];
-            Content = parsedSubsection[1];
-            Points = new List<Point>();
-            Amendments = new List<Amendment>();
+            ContentParser subsection = new ContentParser(this);
+            subsection.ParseSubsection();
+            if (subsection.ParserError)
+                return;
+            Number = subsection.Number;
+            Content = subsection.Content;
             bool isAdjacent = true;
+            Log.Debug("Subsection: {Number} - {Content}", Number, Content.Substring(0, Math.Min(Content.Length, 50)));
             while (paragraph.NextSibling() is Paragraph nextParagraph 
                     && nextParagraph.StyleId("UST") != true
-                    && nextParagraph.StyleId("ART") != true)
+                    && nextParagraph.StyleId("ART") != true
+                    && isAdjacent)
             {
                 if (nextParagraph.StyleId("PKT") == true)
                 {
@@ -55,40 +53,6 @@ namespace WordParserLibrary.Model
                 AmendmentOperations = ab.Build(Amendments, this);
             }
         }
-        private string[] ParseSubsection(string text)
-        {
-            if (text.StartsWith("Art."))
-            {
-                // Dopasowanie do formatu: Art. X. Y. text
-                var matchWithY = Regex.Match(text, @"^Art\.\s\d+\.\s(\d+\w*)\.\s(.*)$");
-                if (matchWithY.Success)
-                {
-                    return [matchWithY.Groups[1].Value, matchWithY.Groups[2].Value];
-                }
-
-                // Dopasowanie do formatu: Art. X. text
-                var matchWithoutY = Regex.Match(text, @"^Art\.\s\d+\.\s(.*)$");
-                if (matchWithoutY.Success)
-                {
-                    return ["1", matchWithoutY.Groups[1].Value];
-                }
-
-                //throw new FormatException("The text format is invalid for an article.");
-                return ["The text format is invalid.", text];
-            }
-            else
-            {
-                // Dopasowanie do formatu: Y. text
-                var match = Regex.Match(text, @"^(\d+\w*)\.\s(.*)$");
-                if (match.Success)
-                {
-                    return [match.Groups[1].Value, match.Groups[2].Value];
-                }
-
-                //throw new FormatException("The text format is invalid.");
-                return ["The text format is invalid.", text];
-            }
-        }
 
         public XElement ToXML(bool generateGuids)
         {
@@ -112,6 +76,76 @@ namespace WordParserLibrary.Model
         {
             var parentId = (Parent as Article)?.BuildId();
             return parentId != null ? $"{parentId}.ust_{Number}" : $"ust_{Number}";
+        }
+    }
+
+    public class ContentParser
+    {
+        private BaseEntity entity = null!;
+        public string Number { get; private set; } = string.Empty;
+        public string Content { get; private set; } = string.Empty;
+        public bool ParserError { get; private set; } = false;
+
+        public ContentParser(BaseEntity entity)
+        {
+            this.entity = entity;
+        }
+        
+        public ContentParser ParseSubsection()
+        {
+            var text = entity.Content.Trim();
+            if (text.StartsWith("Art."))
+            {
+                // Dopasowanie do formatu: Art. X. Y. text
+                var matchWithY = Regex.Match(text, @"^Art\.\s\d+\.\s(\d+\w*)\.\s(.*)$");
+                if (matchWithY.Success)
+                {
+                    Number = matchWithY.Groups[1].Value;
+                    Content = matchWithY.Groups[2].Value;
+                    return this;
+                }
+
+                // Dopasowanie do formatu: Art. X. text
+                var matchWithoutY = Regex.Match(text, @"^Art\.\s\d+\.\s?(.*)$");
+                if (matchWithoutY.Success)
+                {
+                    Number = "1"; // Domyślnie ustawiamy numer na 1, jeśli nie ma Y
+                    Content = matchWithoutY.Groups[1].Value;
+                    return this;
+                }
+
+                // throw new FormatException("The text format is invalid.");
+                ParserError = true;
+                entity.Error = true;
+                entity.ErrorMessage = "Oczekiwano formatu: Art. X. Y. text lub Art. X. text.\nMożliwy błędny styl paragrafu.";
+                return this;
+            }
+            else
+            {
+                // Dopasowanie do formatu: Y. text
+                var match = Regex.Match(text, @"^(\d+\w*)\.\s?(.*)$");
+                if (match.Success)
+                {
+                    Number = match.Groups[1].Value;
+                    Content = match.Groups[2].Value;
+                    return this;
+                }
+
+                //throw new FormatException("The text format is invalid.");
+                ParserError = true;
+                entity.Error = true;
+                entity.ErrorMessage = "Oczekiwano formatu: Y. text.\nMożliwy błędny styl paragrafu.";
+                return this;
+            }
+
+            // var match = Regex.Match(text, @"^(?<number>\d+)\s*(?<content>.*)$");
+            // if (!match.Success)
+            //     throw new FormatException($"Invalid subsection format: {text}");
+
+            // var number = match.Groups["number"].Value;
+            // var content = match.Groups["content"].Value.Trim();
+
+            // return new TextSegment(number, content);
         }
     }
 }

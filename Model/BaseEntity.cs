@@ -21,6 +21,8 @@ namespace WordParserLibrary.Model
         public Paragraph? Paragraph { get; set; }
         public List<AmendmentOperation> AmendmentOperations { get; set; }
         public LegalReference LegalReference { get; set; } = new LegalReference();
+        public bool? Error { get; set; }
+        public string? ErrorMessage { get; set; }
 
         public BaseEntity(Paragraph paragraph, BaseEntity? parent)
         {
