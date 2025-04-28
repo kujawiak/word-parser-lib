@@ -12,10 +12,12 @@ namespace WordParserLibrary.Model
 
         public bool ParserError { get; private set; } = false;
         public string ErrorMessage { get; private set; } = string.Empty;
+        public bool HasAmendmentOperation { get; internal set; } = false;
 
         public ContentParser(BaseEntity entity)
         {
             this.entity = entity;
+            HasAmendmentOperation = entity.Content.Contains("uchyla się");
         }
 
         public ContentParser ParseArticle()
@@ -98,6 +100,21 @@ namespace WordParserLibrary.Model
             // var content = match.Groups["content"].Value.Trim();
 
             // return new TextSegment(number, content);
+        }
+
+        public ContentParser ParseOrdinal()
+        {
+            var text = entity.Content.Trim();
+            var match = Regex.Match(text, @"^([^\)]+)\)[\s]?(.*)");
+            if (match.Success)
+            {
+                Number = match.Groups[1].Value;
+                Content = match.Groups[2].Value;
+                return this;
+            }
+            entity.Error = ParserError = true;
+            entity.ErrorMessage = ErrorMessage = "Oczekiwano formatu: X) text.\nMożliwy błędny styl paragrafu.";
+            return this;
         }
     }
 }

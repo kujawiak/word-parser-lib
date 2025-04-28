@@ -2,17 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
+using Serilog;
 
 namespace WordParserLibrary.Model
 {
         public class Tiret : BaseEntity, IAmendable, IXmlConvertible {
-        public int Number { get; set; }
-        public List<Amendment> Amendments { get; set; }
+        public int Number { get; set; } = 1;
+        public List<Amendment> Amendments { get; set; } = new List<Amendment>();
         public Tiret(Paragraph paragraph, Letter parent, int ordinal = 1) : base(paragraph, parent)
         {
+            ContentParser tiret = new ContentParser(this);
+            Content = tiret.Content;
             Number = ordinal;
-            Amendments = new List<Amendment>();
             bool isAdjacent = true;
+            Log.Information("Tiret: {Number} - {Content}", Number, Content.Substring(0, Math.Min(Content.Length, 100)));
             while (paragraph.NextSibling() is Paragraph nextParagraph 
                     && nextParagraph.StyleId("TIR") != true
                     && nextParagraph.StyleId("LIT") != true
@@ -30,7 +33,7 @@ namespace WordParserLibrary.Model
                 }
                 paragraph = nextParagraph;
             }
-            if (IsAmendmentOperation())
+            if (tiret.HasAmendmentOperation)
             {
                 Amendments.Add(new Amendment(paragraph, this));
             }

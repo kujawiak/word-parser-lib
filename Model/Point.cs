@@ -1,23 +1,26 @@
-using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
+using Serilog;
 
 namespace WordParserLibrary.Model
 {
     public class Point : BaseEntity, IAmendable, IXmlConvertible {
-        public List<Letter> Letters { get; set; }
-        public List<Amendment> Amendments { get; set; }
-        public string Number { get; set; }
+        public List<Letter> Letters { get; set; } = new List<Letter>();
+        public List<Amendment> Amendments { get; set; } = new List<Amendment>();
+        public string Number { get; set; } = string.Empty;
         public Point(Paragraph paragraph, Subsection parent) : base(paragraph, parent)
         {
-            var parsedPoint = ParseOrdinal(Content);
-            Number = parsedPoint[1].Value;
-            Content = parsedPoint[2].Value;
-            Letters = new List<Letter>();
-            Amendments = new List<Amendment>();
+            ContentParser point = new ContentParser(this);
+            point.ParseOrdinal();
+            if (point.ParserError)
+            {
+                Log.Error("Error parsing article: {ErrorMessage}", point.ErrorMessage);
+                return;
+            }
+            Number = point.Number;
+            Content = point.Content;
             bool isAdjacent = true;
+            Log.Information("Point: {Number} - {Content}", Number, Content.Substring(0, Math.Min(Content.Length, 100)));
             while (paragraph.NextSibling() is Paragraph nextParagraph 
                     && nextParagraph.StyleId("PKT") != true
                     && nextParagraph.StyleId("UST") != true
@@ -38,7 +41,7 @@ namespace WordParserLibrary.Model
                 }
                 paragraph = nextParagraph;
             }
-            if (IsAmendmentOperation())
+            if (point.HasAmendmentOperation)
             {
                 Amendments.Add(new Amendment(paragraph, this));
             }

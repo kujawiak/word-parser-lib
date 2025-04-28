@@ -1,24 +1,28 @@
-using System;
-using System.Collections.Generic;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
+using Serilog;
 
 namespace WordParserLibrary.Model
 {
         public class Letter : BaseEntity, IAmendable, IXmlConvertible {
-        public List<Tiret> Tirets { get; set; }
-        public string Ordinal { get; set; }
-        public List<Amendment> Amendments { get; set; }
+        public List<Tiret> Tirets { get; set; } = new List<Tiret>();
+        public string Ordinal { get; set; } = string.Empty;
+        public List<Amendment> Amendments { get; set; } = new List<Amendment>();
         public string AmendedArticle { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public AmendmentOperationType AmendmentOperationType { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public Letter(Paragraph paragraph, Point parent) : base(paragraph, parent)
         {
-            var parsedLetter = ParseOrdinal(Content);
-            Ordinal = parsedLetter[1].Value;
-            Content = parsedLetter[2].Value;
-            Tirets = new List<Tiret>();
-            Amendments = new List<Amendment>();
+            ContentParser letter = new ContentParser(this);
+            letter.ParseOrdinal();
+            if (letter.ParserError)
+            {
+                Log.Error("Error parsing article: {ErrorMessage}", letter.ErrorMessage);
+                return;
+            }
+            Ordinal = letter.Number;
+            Content = letter.Content;
+            Log.Information("Letter: {Ordinal} - {Content}", Ordinal, Content.Substring(0, Math.Min(Content.Length, 100)));
             bool isAdjacent = true;
             var tiretCount = 1;
             while (paragraph.NextSibling() is Paragraph nextParagraph 
@@ -43,7 +47,7 @@ namespace WordParserLibrary.Model
                 }
                 paragraph = nextParagraph;
             }
-            if (IsAmendmentOperation())
+            if (letter.HasAmendmentOperation)
             {
                 Amendments.Add(new Amendment(paragraph, this));
             }

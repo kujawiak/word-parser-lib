@@ -10,7 +10,7 @@ namespace WordParserLibrary
 {
     public class LegalAct
     {
-        public WordprocessingDocument _wordDoc  { get; }
+        public WordprocessingDocument WordDocument  { get; }
         public MainDocumentPart MainPart { get; }
         public DocumentSettingsPart? SettingsPart { get; }
 
@@ -20,9 +20,9 @@ namespace WordParserLibrary
         public LegalAct(WordprocessingDocument wordDoc)
         {
             LoggerConfig.ConfigureLogger();
-            Log.Information("[CTOR]\tTworzenie instancji LegalAct");
-            _wordDoc = wordDoc;
-            MainPart = _wordDoc.MainDocumentPart ?? throw new InvalidOperationException("MainDocumentPart is null.");
+            Log.Information("[LegalAct.Constructor]\tTworzenie instancji LegalAct");
+            WordDocument = wordDoc;
+            MainPart = WordDocument.MainDocumentPart ?? throw new InvalidOperationException("MainDocumentPart is null.");
             Title = new Title(MainPart.Document.Descendants<Paragraph>()
                                         .Where(p => p.ParagraphProperties != null 
                                                 && p.StyleId("TYTUAKT") == true).FirstOrDefault() ?? throw new InvalidOperationException("Title paragraph not found"));                                        // Tytuł #1
@@ -37,11 +37,13 @@ namespace WordParserLibrary
                 if (paragraph.ParagraphProperties == null)
                 {
                     Console.WriteLine("[CTOR]\tBrak właściwości paragrafu!");
+                    AddComment(paragraph, "Brak właściwości paragrafu!");
                     continue;
                 }
                 if (paragraph.ParagraphProperties.ParagraphStyleId == null)
                 {
                     Console.WriteLine("[CTOR]\tBrak stylu paragrafu!");
+                    AddComment(paragraph, "Brak stylu paragrafu!");
                     continue;
                 }
                 
@@ -49,11 +51,10 @@ namespace WordParserLibrary
 
                 if (paragraphStyle != null && paragraphStyle?.ToString()?.StartsWith("ART") == true)
                 {
-                    // Console.WriteLine("[CTOR]\tZnaleziono artykuł w paragrafie: " + paragraph.InnerText);
                     Articles.Add(new Article(paragraph));
                 }
             }
-            Console.WriteLine("Znaleziono artykułów: " + Articles.Count);
+            Log.Information("Znaleziono artykułów: " + Articles.Count);
         }
 
         public void RemoveSystemComments()
@@ -293,38 +294,6 @@ namespace WordParserLibrary
                 paragraph.InsertAfterSelf(newParagraph);
                 paragraph.Remove();
             }
-
-            void ReplaceFormattingWithStyle(Run run, RunProperties runProperties)
-            {
-                if (runProperties.Elements<Italic>().Any())
-                {
-                    var rStyle = new RunStyle { Val = GetStyleID("_K_ - kursywa") };
-                    runProperties.AppendChild(rStyle);
-                    runProperties.Elements<Bold>().ToList().ForEach(e => e.Remove());
-                    AddComment(run, "Zamieniono ręczne formatowanie kursywy na styl");
-                } else if (runProperties.Elements<Bold>().Any())
-                {
-                    var rStyle = new RunStyle { Val = GetStyleID("_P_ - pogrubienie") };
-                    runProperties.AppendChild(rStyle);
-                    runProperties.Elements<Bold>().ToList().ForEach(e => e.Remove());
-                    AddComment(run, "Zamieniono ręczne formatowanie pogrubienia na styl");
-                }
-                if (runProperties.Elements<VerticalTextAlignment>().Any() )
-                {
-                    var rStyle = new RunStyle { Val = GetStyleID("_IG_ - indeks górny") };
-                    runProperties.AppendChild(rStyle);
-                    runProperties.Elements<VerticalTextAlignment>().ToList().ForEach(e => e.Remove());
-                    AddComment(run, "Zamieniono ręczne formatowanie indeksu górnego na styl");
-                }
-                if (runProperties.Elements<Bold>().Any())
-                {
-                    // AddComment(run, "Ręczne formatowanie pogrubienia");
-                }
-                if (runProperties.Elements<Italic>().Any())
-                {
-                    // AddComment(run, "Ręczne formatowanie kursywy");
-                }
-            }
         }
 
         public void MergeRuns()
@@ -337,7 +306,7 @@ namespace WordParserLibrary
                 var runs = paragraph.Elements<Run>().ToList();
                 Console.WriteLine("[RUN_MERGE]\tPrzetwarzanie paragrafu: " + paragraph.InnerText);
                 Console.WriteLine("[RUN_MERGE]\tLiczba runów: " + runs.Count);
-                Run newRun = null;
+                Run newRun = null!;
 
                 foreach (var run in runs)
                 {
@@ -357,7 +326,7 @@ namespace WordParserLibrary
                         if (newRun != null)
                         {
                             paragraph.AppendChild(newRun);
-                            newRun = null;
+                            newRun = null!;
                         }
                         paragraph.AppendChild(run.CloneNode(true));
                     }
@@ -456,7 +425,7 @@ namespace WordParserLibrary
                     GenerateXML(true);
                 }
             }
-            _wordDoc.Clone(memoryStream);
+            WordDocument.Clone(memoryStream);
             return memoryStream;
         }
         // -------------
@@ -469,12 +438,12 @@ namespace WordParserLibrary
         
         public void Save()
         {
-            _wordDoc.Save();
+            WordDocument.Save();
         }
         
         public void SaveAs(string newFilePath)
         {
-            using (var newDoc = (WordprocessingDocument)_wordDoc.Clone(newFilePath))
+            using (var newDoc = (WordprocessingDocument)WordDocument.Clone(newFilePath))
             {
                 newDoc.CompressionOption = CompressionOption.Maximum;
                 newDoc.Save();
@@ -553,6 +522,33 @@ namespace WordParserLibrary
                     {
                         var commentText = $"Błąd: {subsection.ErrorMessage}";
                         AddComment(subsection.Paragraph, commentText);
+                    }
+                    foreach (var point in subsection.Points)
+                    {
+                        if (point.Error == true && point.ErrorMessage != null)
+                        {
+                            var commentText = $"Błąd: {point.ErrorMessage}";
+                            AddComment(point.Paragraph, commentText);
+                        }
+                        foreach (var letter in point.Letters)
+                        {
+                            if (letter.Error == true && letter.ErrorMessage != null)
+                            {
+                                var commentText = $"Błąd: {letter.ErrorMessage}";
+                                AddComment(letter.Paragraph, commentText);
+                            }
+                            if (letter.Tirets != null && letter.Tirets.Any())
+                            {
+                                foreach (var tiret in letter.Tirets)
+                                {
+                                    if (tiret.Error == true && tiret.ErrorMessage != null)
+                                    {
+                                        var commentText = $"Błąd: {tiret.ErrorMessage}";
+                                        AddComment(tiret.Paragraph, commentText);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

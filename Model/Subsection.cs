@@ -24,7 +24,7 @@ namespace WordParserLibrary.Model
             Number = subsection.Number;
             Content = subsection.Content;
             bool isAdjacent = true;
-            Log.Information("Subsection: {Number} - {Content}", Number, Content.Substring(0, Math.Min(Content.Length, 50)));
+            Log.Information("Subsection: {Number} - {Content}", Number, Content.Substring(0, Math.Min(Content.Length, 100)));
             while (paragraph.NextSibling() is Paragraph nextParagraph 
                     && nextParagraph.StyleId("UST") != true
                     && nextParagraph.StyleId("ART") != true
@@ -46,7 +46,7 @@ namespace WordParserLibrary.Model
                 }
                 paragraph = nextParagraph;
             }
-            if (IsAmendmentOperation())
+            if (subsection.HasAmendmentOperation)
             {
                 Amendments.Add(new Amendment(paragraph, this));
             }

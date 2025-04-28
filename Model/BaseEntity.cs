@@ -18,7 +18,7 @@ namespace WordParserLibrary.Model
         public string Content { get; set; }
         public string Context { get; set; }
         public string RawContent { get; set; }
-        public Paragraph? Paragraph { get; set; }
+        public Paragraph Paragraph { get; set; }
         public List<AmendmentOperation> AmendmentOperations { get; set; }
         public LegalReference LegalReference { get; set; } = new LegalReference();
         public bool? Error { get; set; }
@@ -123,17 +123,6 @@ namespace WordParserLibrary.Model
             }
 
             return contextBuilder.ToString().Trim();
-        }
-        
-        public GroupCollection ParseOrdinal(string text)
-        {
-            var match = Regex.Match(text, @"^([^\)]+)\)[\s]?(.*)");
-            return match.Groups;
-        }
-
-        public bool IsAmendmentOperation()
-        {
-            return Content.Contains("uchyla się");
         }
     }
 }
