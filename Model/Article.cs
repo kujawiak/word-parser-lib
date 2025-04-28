@@ -4,30 +4,38 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
+using Serilog;
 
 namespace WordParserLibrary.Model
 {
     public class Article : BaseEntity, IXmlConvertible {
-        public string Number { get; set; }
-        public bool IsAmending { get; set; }
-        public string? PublicationYear { get; set; }
-        public string? PublicationNumber { get; set; }
-        public List<Subsection> Subsections { get; set; }
-        public List<string> AmendmentList { get; set; }
+        public string Number { get; set; } = string.Empty;
+        public bool IsAmending { get; set; } = false;
+        public string PublicationYear { get; set; } = string.Empty;
+        public string PublicationNumber { get; set; } = string.Empty;
+        public List<Subsection> Subsections { get; set; } = new List<Subsection>();
+        //TODO: For test purposes only, remove later
+        public List<string> AmendmentList { get; set; } = new List<string>();
 
         public Article(Paragraph paragraph) : base(paragraph, null)
         {
-            var parsedArticle = ParseArticle(Content);
-            Number = parsedArticle[1].Value;
-            Content = parsedArticle[2].Value;
-            IsAmending = SetAmendment();
-            AmendmentList = new List<string>();
+            ContentParser article = new ContentParser(this);
+            article.ParseArticle();
+            if (article.ParserError)
+            {
+                Log.Error("Error parsing article: {ErrorMessage}", article.ErrorMessage);
+                return;
+            }
+            Number = article.Number;
+            IsAmending = !string.IsNullOrEmpty(article.PublicationNumber) && !string.IsNullOrEmpty(article.PublicationYear);
             if (IsAmending)
             {
-                LegalReference.PublicationNumber = PublicationNumber;
-                LegalReference.PublicationYear = PublicationYear;
+                PublicationNumber = LegalReference.PublicationNumber = article.PublicationNumber;
+                PublicationYear = LegalReference.PublicationYear = article.PublicationYear;
             }
             // Każdy artykuł zawiera co najmniej jeden ustęp, którego treść jest zawarta w treści artykułu
+            Content = String.Empty;
+            Log.Information("Article: {Number} - {Content}", Number, Content.Substring(0, Math.Min(Content.Length, 50)));
             var firstSubsection = new Subsection(paragraph, this);
             Subsections = [firstSubsection];
             while (paragraph.NextSibling() is Paragraph nextParagraph 
@@ -38,25 +46,6 @@ namespace WordParserLibrary.Model
                     Subsections.Add(new Subsection(nextParagraph, this));
                 }
                 paragraph = nextParagraph;
-            }
-        }
-
-        GroupCollection ParseArticle(string text)
-        {
-            var match = Regex.Match(text, @"Art\. ([\w\d]+)+\.?\s*(.*)");
-            return match.Groups;
-        }
-
-        bool SetAmendment()
-        {
-            var publication = new Regex(@"Dz\.\sU\.\sz\s(\d{4})\sr\.\spoz\.\s(\d+)");
-            if (publication.Match(Content).Success)
-            {
-                PublicationYear = publication.Match(Content).Groups[1].Value;
-                PublicationNumber = publication.Match(Content).Groups[2].Value;
-                return true;
-            } else {
-                return false;
             }
         }
 
@@ -82,7 +71,6 @@ namespace WordParserLibrary.Model
 
         public string BuildId()
         {
-            //var parentId = (Article)Parent?.GetId();
             return $"art_{Number}";
         }
     }

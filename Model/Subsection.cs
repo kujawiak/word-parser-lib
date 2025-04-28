@@ -17,11 +17,14 @@ namespace WordParserLibrary.Model
             ContentParser subsection = new ContentParser(this);
             subsection.ParseSubsection();
             if (subsection.ParserError)
+            {
+                Log.Error("Error parsing subsection: {ErrorMessage}", subsection.ErrorMessage);
                 return;
+            }
             Number = subsection.Number;
             Content = subsection.Content;
             bool isAdjacent = true;
-            Log.Debug("Subsection: {Number} - {Content}", Number, Content.Substring(0, Math.Min(Content.Length, 50)));
+            Log.Information("Subsection: {Number} - {Content}", Number, Content.Substring(0, Math.Min(Content.Length, 50)));
             while (paragraph.NextSibling() is Paragraph nextParagraph 
                     && nextParagraph.StyleId("UST") != true
                     && nextParagraph.StyleId("ART") != true
