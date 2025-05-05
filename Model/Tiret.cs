@@ -46,10 +46,10 @@ namespace WordParserLibrary.Model
     
         public XElement ToXML(bool generateGuids)
         {
-            var newElement = new XElement(XMLConstants.Tiret,
+            var newElement = new XElement(XmlConstants.Tiret,
                 new XAttribute("id", BuildId()));
             if (generateGuids) newElement.Add(new XAttribute("guid", Guid));
-            newElement.AddFirst(new XElement(XMLConstants.Number, Number));
+            newElement.AddFirst(new XElement(XmlConstants.Number, Number));
             newElement.Add(new XElement("text", Content));
             foreach (var amendmentOperation in AmendmentOperations)
             {

@@ -27,8 +27,7 @@ namespace WordParserLibrary.Model
             Log.Information("Subsection: {Number} - {Content}", Number, Content.Substring(0, Math.Min(Content.Length, 100)));
             while (paragraph.NextSibling() is Paragraph nextParagraph 
                     && nextParagraph.StyleId("UST") != true
-                    && nextParagraph.StyleId("ART") != true
-                    && isAdjacent)
+                    && nextParagraph.StyleId("ART") != true)
             {
                 if (nextParagraph.StyleId("PKT") == true)
                 {
@@ -59,10 +58,10 @@ namespace WordParserLibrary.Model
 
         public XElement ToXML(bool generateGuids)
         {
-            var newElement = new XElement(XMLConstants.Subsection,
+            var newElement = new XElement(XmlConstants.Subsection,
                 new XAttribute("id", BuildId()));
             if (generateGuids) newElement.Add(new XAttribute("guid", Guid));
-            newElement.AddFirst(new XElement(XMLConstants.Number, Number));
+            newElement.AddFirst(new XElement(XmlConstants.Number, Number));
             newElement.Add(new XElement("text", Content));
             foreach (var point in Points)
             {

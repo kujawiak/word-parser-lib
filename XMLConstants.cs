@@ -1,7 +1,7 @@
 
 namespace WordParserLibrary
 {
-    public static class XMLConstants
+    public static class XmlConstants
     {
         public const string Root = "ustawa";
         public const string Title = "tytul";
