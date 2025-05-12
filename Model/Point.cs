@@ -75,5 +75,19 @@ namespace WordParserLibrary.Model
             var parentId = (Parent as Subsection)?.BuildId();
             return parentId != null ? $"{parentId}.pkt_{Number}" : $"pkt_{Number}";
         }
+
+        public Paragraph ToParagraph()
+        {
+             var p = new Paragraph()
+            {
+                ParagraphProperties = new ParagraphProperties(
+                    new ParagraphStyleId { Val = "PKTpunkt" }
+                )
+            };
+            p.Append(new Run(new Text($"{Number})")));
+            p.Append(new Run(new TabChar()));
+            p.Append(new Run(new Text(Content)));
+            return p;
+        }
     }
 }

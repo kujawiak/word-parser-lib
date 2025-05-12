@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Serilog;
 
@@ -78,6 +79,19 @@ namespace WordParserLibrary.Model
         {
             var parentId = (Parent as Article)?.BuildId();
             return parentId != null ? $"{parentId}.ust_{Number}" : $"ust_{Number}";
+        }
+
+        public Paragraph ToParagraph()
+        {
+            var p = new Paragraph()
+            {
+                ParagraphProperties = new ParagraphProperties(
+                    new ParagraphStyleId { Val = "USTustnpkodeksu" }
+                )
+            };
+            p.Append(new Run(new Text($"{Number}.\u00A0")));
+            p.Append(new Run(new Text($"{Content}")));
+            return p;
         }
     }
 }

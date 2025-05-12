@@ -80,5 +80,19 @@ namespace WordParserLibrary.Model
             var parentId = (Parent as Point)?.BuildId();
             return parentId != null ? $"{parentId}.lit_{Ordinal}" : $"lit_{Ordinal}";
         }
+
+        public Paragraph ToParagraph()
+        {
+            var p = new Paragraph()
+            {
+                ParagraphProperties = new ParagraphProperties(
+                    new ParagraphStyleId { Val = "LITlitera" }
+                )
+            };
+            p.Append(new Run(new Text($"{Ordinal})")));
+            p.Append(new Run(new TabChar()));
+            p.Append(new Run(new Text(Content)));
+            return p;          
+        }
     }
 }

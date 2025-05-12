@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Serilog;
 
@@ -72,6 +73,32 @@ namespace WordParserLibrary.Model
         public string BuildId()
         {
             return $"art_{Number}";
+        }
+
+        public Paragraph ToParagraph()
+        {
+            var p = new Paragraph()
+            {
+                ParagraphProperties = new ParagraphProperties(
+                    new ParagraphStyleId { Val = "ARTartustawynprozporzdzenia" }
+                )
+            };
+            p.Append(new Run(
+                new RunProperties(new RunStyle { Val = "Ppogrubienie" }),
+                new Text($"Art.\u00A0{Number}.\u00A0") { Space = SpaceProcessingModeValues.Preserve }
+            ));
+            if (Subsections.Count > 1)
+            {
+                p.Append(
+                    new Run(
+                        new Text($"{Subsections.First().Number}.\u00A0") { Space = SpaceProcessingModeValues.Preserve }
+                    )
+                );
+            }
+            p.Append(new Run(
+                new Text(Subsections.First().Content) { Space = SpaceProcessingModeValues.Preserve }
+            ));
+            return p;
         }
     }
 }
