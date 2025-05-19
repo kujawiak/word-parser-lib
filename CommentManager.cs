@@ -6,7 +6,6 @@ namespace WordParserLibrary
 {
     public class CommentManager
     {
-        private readonly LegalAct _legalAct;
         public MainDocumentPart MainPart { get; }
 
 
@@ -104,9 +103,9 @@ namespace WordParserLibrary
         }
 
 
-        public void CommentErrors()
+        public void CommentErrors(LegalAct legalAct)
         {
-            foreach (var article in _legalAct.Articles)
+            foreach (var article in legalAct.Articles)
             {
                 if (article.Error == true && article.ErrorMessage != null)
                 {

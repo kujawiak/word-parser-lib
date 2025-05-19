@@ -23,11 +23,12 @@ namespace WordParserLibrary.Model
         public ContentParser ParseArticle()
         {
             var text = entity.ContentText.Trim();
-            var match = Regex.Match(text, @"Art\.\s([\w\d]+)+\.?\s*(.*)");
+            var match = Regex.Match(text, @"^(Art\.|§)\s*([\w\d]+)\.?\s*(.*)");
             if (match.Success)
             {
-                Number = match.Groups[1].Value;
-                Content = match.Groups[2].Value.Trim();
+                //Number = match.Groups[1].Value;
+                Number = match.Groups[2].Value.Trim();
+                Content = match.Groups[3].Value.Trim();
             }
             else
             {
@@ -50,23 +51,23 @@ namespace WordParserLibrary.Model
         public ContentParser ParseSubsection()
         {
             var text = entity.ContentText.Trim();
-            if (text.StartsWith("Art."))
+            if (text.StartsWith("Art.") || text.StartsWith("§"))
             {
                 // Dopasowanie do formatu: Art. X. Y. text
-                var matchWithY = Regex.Match(text, @"^Art\.\s\d+\.\s(\d+\w*)\.\s(.*)$");
+                var matchWithY = Regex.Match(text, @"^(Art\.|§)\s\d+\.\s(\d+\w*)\.\s(.*)$");
                 if (matchWithY.Success)
                 {
-                    Number = matchWithY.Groups[1].Value;
-                    Content = matchWithY.Groups[2].Value;
+                    Number = matchWithY.Groups[2].Value;
+                    Content = matchWithY.Groups[3].Value;
                     return this;
                 }
 
                 // Dopasowanie do formatu: Art. X. text
-                var matchWithoutY = Regex.Match(text, @"^Art\.\s\d+\.\s?(.*)$");
+                var matchWithoutY = Regex.Match(text, @"^(Art\.|§)\s\d+\.\s?(.*)$");
                 if (matchWithoutY.Success)
                 {
                     Number = "1"; // Domyślnie ustawiamy numer na 1, jeśli nie ma Y
-                    Content = matchWithoutY.Groups[1].Value;
+                    Content = matchWithoutY.Groups[2].Value;
                     return this;
                 }
 

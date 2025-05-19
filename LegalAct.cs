@@ -43,7 +43,7 @@ namespace WordParserLibrary
             // Title.Parts[0].Chapters[0].Sections.Add(new Section());     // Oddział #1
 
             foreach (var paragraph in MainPart.Document.Descendants<Paragraph>()
-                                            .Where(p => p.InnerText.StartsWith("Art."))
+                                            .Where(p => p.InnerText.StartsWith("Art.") || p.InnerText.StartsWith("§"))
                                             .ToList())
             {
                 if (paragraph.ParagraphProperties == null)

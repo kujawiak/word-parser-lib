@@ -19,7 +19,7 @@ namespace WordParserLibrary.Model
             Parent = parent;
             Paragraph = paragraph;
             //TODO: For testing purposes only
-            Parent?.Article?.AmendmentList.Add(LegalReference.ToString() + " " + Context);
+            Parent?.Article?.AmendmentList.Add(Context);
             StyleValue = "Z";
         }
 
