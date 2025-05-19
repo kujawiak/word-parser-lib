@@ -2,6 +2,7 @@ using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Validation;
 using DocumentFormat.OpenXml.Wordprocessing;
+using Serilog;
 using System.IO;
 using WordParserLibrary.Model;
 
@@ -9,11 +10,12 @@ namespace WordParserLibrary
 {
     public class DocxGenerator
     {
-        private readonly LegalAct _legalAct;
+        private readonly LegalAct legalAct;
+        private CommentManager commentManager;
 
         public DocxGenerator(LegalAct legalAct)
         {
-            _legalAct = legalAct;
+            this.legalAct = legalAct;
         }
 
         public void Generate()
@@ -33,7 +35,10 @@ namespace WordParserLibrary
                 File.Delete(outputPath);
             }
 
-            using (var document = WordprocessingDocument.CreateFromTemplate(templatePath, false))
+            File.Copy(templatePath, outputPath);
+
+            //using (var document = WordprocessingDocument.CreateFromTemplate(templatePath, false))
+            using (var document = WordprocessingDocument.Open(outputPath, true))
             {
                 if (document.MainDocumentPart != null)
                 {
@@ -46,6 +51,17 @@ namespace WordParserLibrary
 
                     // Change the document type to Document (from Macro-Enabled Template)
                     document.ChangeDocumentType(DocumentFormat.OpenXml.WordprocessingDocumentType.Document);
+                }
+                
+                // document.Clone(outputPath);
+
+                commentManager = new CommentManager(document.MainDocumentPart);
+
+                if (document.MainDocumentPart.WordprocessingCommentsPart == null)
+                {
+                    var commentPart = document.MainDocumentPart.AddNewPart<WordprocessingCommentsPart>();
+                    commentPart.Comments = new Comments();
+                    commentPart.Comments.Save();
                 }
 
                 ValidateDocx(document);
@@ -81,14 +97,13 @@ namespace WordParserLibrary
                 body.RemoveAllChildren();
 
                 // Dodaj artykuły do dokumentu
-                foreach (var article in _legalAct.Articles)
+                foreach (var article in legalAct.Articles)
                 {
                     AddArticle(article, body, styles);
                 }
                 document.Save();
-                document.Clone(outputPath);
             }
-
+            
             Console.WriteLine($"Document generated and saved at: {outputPath}");
         }
 
@@ -120,7 +135,7 @@ namespace WordParserLibrary
             body.AppendChild(p);
             if (article.Subsections.First().Amendments.Any())
             {
-                AddAmendments(article.Subsections.First().Amendments, body);
+                AddAmendments(article.Subsections.First().Amendments, body, styles);
             }
             if (article.Subsections.First().Points.Any())
             {
@@ -141,20 +156,36 @@ namespace WordParserLibrary
             }
         }
 
-        private void AddAmendments(List<Amendment> amendments, Body body)
+        private void AddAmendments(List<Amendment> amendments, Body body, List<StringValue> styles)
         {
-            
             foreach (var amendment in amendments)
             {
                 var p = new Paragraph();
-                p.ParagraphProperties = new ParagraphProperties(new ParagraphStyleId { Val = "ZARTzmartartykuempunktem" });
-                p.ParagraphProperties.Shading = new Shading
+                
+                var style = styles.FirstOrDefault(s => s.Value != null && s.Value.StartsWith(amendment.StyleValue));
+                Log.Debug("Znaleziono styl: {Style}", style);
+                if (style == null)
                 {
-                    Val = ShadingPatternValues.Clear,
-                    Color = "auto",
-                    Fill = "D9EAF7" // Light blue background color
-                };
-                 p.Append(new Run(new Text(amendment.Content)));
+                    Log.Warning("Nie znaleziono stylu dla poprawki: {Amendment}", amendment);
+                    continue;
+                }
+                p.ParagraphProperties = new ParagraphProperties(new ParagraphStyleId { Val = style });
+                // p.ParagraphProperties.Shading = new Shading
+                // {
+                //     Val = ShadingPatternValues.Clear,
+                //     Color = "auto",
+                //     Fill = "D9EAF7" // Light blue background color
+                // };
+                p.Append(new Run(new Text(amendment.ContentText)));
+                if (amendment.Operation != null)
+                {
+                    commentManager.AddComment(p, amendment.Operation.ToString());
+                }
+                else
+                {
+                    commentManager.AddComment(p, "BŁAD: Nie znaleziono operacji; " + amendment.LegalReference.ToString());
+                }
+                
                 body.AppendChild(p);
             }
             
@@ -167,7 +198,7 @@ namespace WordParserLibrary
             body.AppendChild(p);
             if (subsection.Amendments.Any())
             {
-                AddAmendments(subsection.Amendments, body);
+                AddAmendments(subsection.Amendments, body, styles);
             }
             foreach (var point in subsection.Points)
             {
@@ -182,7 +213,7 @@ namespace WordParserLibrary
             body.AppendChild(p);
             if (point.Amendments.Any())
             {
-                AddAmendments(point.Amendments, body);
+                AddAmendments(point.Amendments, body, styles);
             }
             foreach (var letter in point.Letters)
             {
@@ -197,7 +228,7 @@ namespace WordParserLibrary
             body.AppendChild(p);
             if (letter.Amendments.Any())
             {
-                AddAmendments(letter.Amendments, body);
+                AddAmendments(letter.Amendments, body, styles);
             }
             foreach (var tiret in letter.Tirets)
             {
@@ -207,7 +238,7 @@ namespace WordParserLibrary
 
         private void AddTiret(Tiret tiret, Body body)
         {
-            var tiretParagraph = new Paragraph(new Run(new Text(tiret.Content)));
+            var tiretParagraph = new Paragraph(new Run(new Text(tiret.ContentText)));
             // tiretParagraph.ParagraphProperties = new ParagraphProperties(new ParagraphStyleId { Val = "TiretStyle" });
             body.AppendChild(tiretParagraph);
         }
