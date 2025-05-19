@@ -32,7 +32,7 @@ namespace WordParserLibrary
 
             DocumentProcessor = new DocumentProcessor(this);
             XmlGenerator = new XmlGenerator(this);
-            CommentManager = new CommentManager(this);
+            CommentManager = new CommentManager(MainPart);
             DocxGenerator = new DocxGenerator(this);
 
             Title = new Title(MainPart.Document.Descendants<Paragraph>()

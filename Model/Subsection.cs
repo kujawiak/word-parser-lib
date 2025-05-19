@@ -15,6 +15,7 @@ namespace WordParserLibrary.Model
 
         public Subsection(Paragraph paragraph, Article article) : base(paragraph, article)
         {
+            EntityType = "UST";
             ContentParser subsection = new ContentParser(this);
             subsection.ParseSubsection();
             if (subsection.ParserError)
@@ -23,9 +24,9 @@ namespace WordParserLibrary.Model
                 return;
             }
             Number = subsection.Number;
-            Content = subsection.Content;
+            ContentText = subsection.Content;
             bool isAdjacent = true;
-            Log.Information("Subsection: {Number} - {Content}", Number, Content.Substring(0, Math.Min(Content.Length, 100)));
+            Log.Information("Subsection: {Number} - {Content}", Number, ContentText.Substring(0, Math.Min(ContentText.Length, 100)));
             while (paragraph.NextSibling() is Paragraph nextParagraph 
                     && nextParagraph.StyleId("UST") != true
                     && nextParagraph.StyleId("ART") != true)
@@ -63,7 +64,7 @@ namespace WordParserLibrary.Model
                 new XAttribute("id", BuildId()));
             if (generateGuids) newElement.Add(new XAttribute("guid", Guid));
             newElement.AddFirst(new XElement(XmlConstants.Number, Number));
-            newElement.Add(new XElement("text", Content));
+            newElement.Add(new XElement("text", ContentText));
             foreach (var point in Points)
             {
                 newElement.Add(point.ToXML(generateGuids));
@@ -90,7 +91,7 @@ namespace WordParserLibrary.Model
                 )
             };
             p.Append(new Run(new Text($"{Number}.\u00A0")));
-            p.Append(new Run(new Text($"{Content}")));
+            p.Append(new Run(new Text($"{ContentText}")));
             return p;
         }
     }

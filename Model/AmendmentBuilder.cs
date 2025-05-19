@@ -12,7 +12,7 @@ namespace WordParserLibrary.Model
             if (amendments == null || amendments.Count == 0)
                 throw new ArgumentException("Amendments list cannot be null or empty.");
 
-            if (baseEntity == null || string.IsNullOrEmpty(baseEntity.Content))
+            if (baseEntity == null || string.IsNullOrEmpty(baseEntity.ContentText))
             {
                 Console.WriteLine("BaseEntity or its Content cannot be null or empty.");
                 return new List<AmendmentOperation>();
@@ -20,7 +20,7 @@ namespace WordParserLibrary.Model
 
             var amendmentOperations = new List<AmendmentOperation>();
 
-            var ao = FindAmendmentOperation(baseEntity.Content);
+            var ao = FindAmendmentOperation(baseEntity.ContentText);
 
             var targets = ParseTargets(ao);
 
@@ -39,6 +39,10 @@ namespace WordParserLibrary.Model
             
             if (amendmentOperations.Count == 1)
             {
+                foreach (var amendment in amendments)
+                {
+                    amendment.Operation = amendmentOperations.First();
+                }
                 amendmentOperations.First().Amendments.AddRange(amendments);
             }
             else if (amendmentOperations.Count > 1)
@@ -57,7 +61,18 @@ namespace WordParserLibrary.Model
                     //TODO: Ewentualnie zapewnić weryfikację dokumentu przed jego przetworzeniem
                     if (allAmendmets.Count == 0)
                         break;
-                    operation.Amendments.Add(allAmendmets.First());
+                    var first = allAmendmets.First();
+                    var coZmieniane = operation.AmendmentObjectType.ToStyleValueString();
+                    var czymZmieniane = first.Parent.EntityType;
+                    if (czymZmieniane == "ART" || czymZmieniane == "UST" || czymZmieniane == "PKT")
+                    {
+                        czymZmieniane = "";
+                    }
+                   
+                    first.StyleValue = "Z"+czymZmieniane+coZmieniane;
+                    //first;
+                    first.Operation = operation;
+                    operation.Amendments.Add(first);
                     allAmendmets.RemoveAt(0);
                     while (allAmendmets.Any())
                     {
@@ -65,6 +80,7 @@ namespace WordParserLibrary.Model
                         if (amendment.Paragraph?.StyleId() == style)
                             break;
 
+                        amendment.Operation = operation;
                         operation.Amendments.Add(amendment);
                         allAmendmets.RemoveAt(0);
                     }

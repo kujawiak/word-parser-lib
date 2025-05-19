@@ -7,6 +7,8 @@ namespace WordParserLibrary.Model
 {
     public class Amendment : BaseEntity, IXmlConvertible
     {
+        public AmendmentOperation Operation { get; set; }
+        public string StyleValue { get; set; } = string.Empty;
         public Amendment(Paragraph paragraph, BaseEntity parent) : base(paragraph, parent)
         {
             Article = parent.Article ?? (parent as Article);
@@ -18,13 +20,14 @@ namespace WordParserLibrary.Model
             Paragraph = paragraph;
             //TODO: For testing purposes only
             Parent?.Article?.AmendmentList.Add(LegalReference.ToString() + " " + Context);
+            StyleValue = "Z";
         }
 
         public XElement ToXML(bool generateGuids)
         {
             var amendmentElement = new XElement("amendment",
                 //new XAttribute("reference", LegalReference.ToString()),
-                new XElement("content", Content)
+                new XElement("content", ContentText)
             );
             return amendmentElement;
         }

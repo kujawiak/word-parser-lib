@@ -35,8 +35,8 @@ namespace WordParserLibrary.Model
                 PublicationYear = LegalReference.PublicationYear = article.PublicationYear;
             }
             // Każdy artykuł zawiera co najmniej jeden ustęp, którego treść jest zawarta w treści artykułu
-            Content = String.Empty;
-            Log.Information("Article: {Number} - {Content}", Number, Content.Substring(0, Math.Min(Content.Length, 50)));
+            ContentText = String.Empty;
+            Log.Information("Article: {Number} - {Content}", Number, ContentText.Substring(0, Math.Min(ContentText.Length, 50)));
             var firstSubsection = new Subsection(paragraph, this);
             Subsections = [firstSubsection];
             while (paragraph.NextSibling() is Paragraph nextParagraph 
@@ -96,7 +96,7 @@ namespace WordParserLibrary.Model
                 );
             }
             p.Append(new Run(
-                new Text(Subsections.First().Content) { Space = SpaceProcessingModeValues.Preserve }
+                new Text(Subsections.First().ContentText) { Space = SpaceProcessingModeValues.Preserve }
             ));
             return p;
         }

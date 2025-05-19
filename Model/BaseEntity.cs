@@ -15,14 +15,15 @@ namespace WordParserLibrary.Model
         public Letter? Letter { get; set; }
         public Tiret? Tiret { get; set; }
         public Guid Guid { get; set; } = Guid.NewGuid();
-        public string Content { get; set; }
+        Content Content { get; set; }
+        public string ContentText { get; set; }
         public string Context { get; set; }
-        public string RawContent { get; set; }
         public Paragraph Paragraph { get; set; }
         public List<AmendmentOperation> AmendmentOperations { get; set; }
         public LegalReference LegalReference { get; set; } = new LegalReference();
         public bool? Error { get; set; }
         public string? ErrorMessage { get; set; }
+        public string EntityType { get; set; } = string.Empty;
 
         public BaseEntity(Paragraph paragraph, BaseEntity? parent)
         {
@@ -71,9 +72,9 @@ namespace WordParserLibrary.Model
                 };
             }
             Paragraph = paragraph;
-            Content = paragraph.InnerText.Sanitize().Trim();
-            RawContent = paragraph.InnerText.Sanitize();
-            Context = GetContext() ?? Content;
+            ContentText = paragraph.InnerText.Sanitize().Trim();
+            Context = GetContext() ?? ContentText;
+            Content = new Content(this);
             AmendmentOperations = new List<AmendmentOperation>();
             if (Article != null && Article.IsAmending && Paragraph.StyleId("Z") == false)
             {
@@ -85,26 +86,26 @@ namespace WordParserLibrary.Model
             if (LegalReference.Article == null)
             {
                 var regex = new Regex(@"(?:po|Po|w|W)\s*art\.\s*([a-zA-Z0-9]+)");
-                var match = regex.Match(Content);
+                var match = regex.Match(ContentText);
                 if (match.Success) LegalReference.Article = match.Groups[1].Value;
             }
             if (LegalReference.Subsection == null)
             {
                 var subsectionRegex = new Regex(@"(?:po|Po|w|W)\s*ust\.\s*([a-zA-Z0-9]+)");
-                var subsectionMatch = subsectionRegex.Match(Content);
+                var subsectionMatch = subsectionRegex.Match(ContentText);
                 if (subsectionMatch.Success) LegalReference.Subsection = subsectionMatch.Groups[1].Value;
             }
             if (LegalReference.Point == null)
             {
                 var pointRegex = new Regex(@"(?:po|Po|w|W)\s*pkt\s*([a-zA-Z0-9]+)");
-                var pointMatch = pointRegex.Match(Content);
+                var pointMatch = pointRegex.Match(ContentText);
                 if (pointMatch.Success) LegalReference.Point = pointMatch.Groups[1].Value;
             }
             if (LegalReference.Letter == null)
             {
                 //TODO: Weryfikacja przykładem
                 var letterRegex = new Regex(@"(?:po|Po|w|W)\s*lit\.\s*([a-zA-Z])");
-                var letterMatch = letterRegex.Match(Content);
+                var letterMatch = letterRegex.Match(ContentText);
                 if (letterMatch.Success) LegalReference.Letter = letterMatch.Groups[1].Value;
             }
         }
@@ -115,9 +116,9 @@ namespace WordParserLibrary.Model
 
             while (currentEntity != null && !(currentEntity is Article))
             {
-                if (!string.IsNullOrEmpty(currentEntity.Content))
+                if (!string.IsNullOrEmpty(currentEntity.ContentText))
                 {
-                    contextBuilder.Insert(0, currentEntity.Content + " ");
+                    contextBuilder.Insert(0, currentEntity.ContentText + " ");
                 }
                 currentEntity = currentEntity.Parent;
             }

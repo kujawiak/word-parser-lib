@@ -17,12 +17,12 @@ namespace WordParserLibrary.Model
         public ContentParser(BaseEntity entity)
         {
             this.entity = entity;
-            HasAmendmentOperation = entity.Content.Contains("uchyla się");
+            HasAmendmentOperation = entity.ContentText.Contains("uchyla się");
         }
 
         public ContentParser ParseArticle()
         {
-            var text = entity.Content.Trim();
+            var text = entity.ContentText.Trim();
             var match = Regex.Match(text, @"Art\.\s([\w\d]+)+\.?\s*(.*)");
             if (match.Success)
             {
@@ -49,7 +49,7 @@ namespace WordParserLibrary.Model
         
         public ContentParser ParseSubsection()
         {
-            var text = entity.Content.Trim();
+            var text = entity.ContentText.Trim();
             if (text.StartsWith("Art."))
             {
                 // Dopasowanie do formatu: Art. X. Y. text
@@ -104,7 +104,7 @@ namespace WordParserLibrary.Model
 
         public ContentParser ParseOrdinal()
         {
-            var text = entity.Content.Trim();
+            var text = entity.ContentText.Trim();
             var match = Regex.Match(text, @"^([^\)]+)\)[\s]?(.*)");
             if (match.Success)
             {

@@ -21,7 +21,20 @@ namespace WordParserLibrary.Model
                 AmendmentObjectType.Point => "punkt",
                 AmendmentObjectType.Letter => "litera",
                 AmendmentObjectType.Tiret => "tiret",
-                _ => "None"
+                _ => "none"
+            };
+        }
+
+        public static string ToStyleValueString(this AmendmentObjectType type)
+        {
+            return type switch
+            {
+                AmendmentObjectType.Article => "ART",
+                AmendmentObjectType.Subsection => "UST",
+                AmendmentObjectType.Point => "PKT",
+                AmendmentObjectType.Letter => "LIT",
+                AmendmentObjectType.Tiret => "TIR",
+                _ => ""
             };
         }
     }

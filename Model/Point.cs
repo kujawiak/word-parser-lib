@@ -10,6 +10,7 @@ namespace WordParserLibrary.Model
         public string Number { get; set; } = string.Empty;
         public Point(Paragraph paragraph, Subsection parent) : base(paragraph, parent)
         {
+            EntityType = "PKT";
             ContentParser point = new ContentParser(this);
             point.ParseOrdinal();
             if (point.ParserError)
@@ -18,9 +19,9 @@ namespace WordParserLibrary.Model
                 return;
             }
             Number = point.Number;
-            Content = point.Content;
+            ContentText = point.Content;
             bool isAdjacent = true;
-            Log.Information("Point: {Number} - {Content}", Number, Content.Substring(0, Math.Min(Content.Length, 100)));
+            Log.Information("Point: {Number} - {Content}", Number, ContentText.Substring(0, Math.Min(ContentText.Length, 100)));
             while (paragraph.NextSibling() is Paragraph nextParagraph 
                     && nextParagraph.StyleId("PKT") != true
                     && nextParagraph.StyleId("UST") != true
@@ -58,7 +59,7 @@ namespace WordParserLibrary.Model
                 new XAttribute("id", BuildId()));
             if (generateGuids) newElement.Add(new XAttribute("guid", Guid));
             newElement.AddFirst(new XElement(XmlConstants.Number, Number));
-            newElement.Add(new XElement("text", Content));
+            newElement.Add(new XElement("text", ContentText));
             foreach (var letter in Letters)
             {
                 newElement.Add(letter.ToXML(generateGuids));
@@ -86,7 +87,7 @@ namespace WordParserLibrary.Model
             };
             p.Append(new Run(new Text($"{Number})")));
             p.Append(new Run(new TabChar()));
-            p.Append(new Run(new Text(Content)));
+            p.Append(new Run(new Text(ContentText)));
             return p;
         }
     }

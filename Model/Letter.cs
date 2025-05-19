@@ -13,6 +13,7 @@ namespace WordParserLibrary.Model
 
         public Letter(Paragraph paragraph, Point parent) : base(paragraph, parent)
         {
+            EntityType = "LIT";
             ContentParser letter = new ContentParser(this);
             letter.ParseOrdinal();
             if (letter.ParserError)
@@ -21,8 +22,8 @@ namespace WordParserLibrary.Model
                 return;
             }
             Ordinal = letter.Number;
-            Content = letter.Content;
-            Log.Information("Letter: {Ordinal} - {Content}", Ordinal, Content.Substring(0, Math.Min(Content.Length, 100)));
+            ContentText = letter.Content;
+            Log.Information("Letter: {Ordinal} - {Content}", Ordinal, ContentText.Substring(0, Math.Min(ContentText.Length, 100)));
             bool isAdjacent = true;
             var tiretCount = 1;
             while (paragraph.NextSibling() is Paragraph nextParagraph 
@@ -64,7 +65,7 @@ namespace WordParserLibrary.Model
                 new XAttribute("id", BuildId()));
             if (generateGuids) newElement.Add(new XAttribute("guid", Guid));
             newElement.AddFirst(new XElement(XmlConstants.Number, Ordinal));
-            newElement.Add(new XElement("text", Content));
+            newElement.Add(new XElement("text", ContentText));
             foreach (var tiret in Tirets)
             {
                 newElement.Add(tiret.ToXML(generateGuids));
@@ -91,7 +92,7 @@ namespace WordParserLibrary.Model
             };
             p.Append(new Run(new Text($"{Ordinal})")));
             p.Append(new Run(new TabChar()));
-            p.Append(new Run(new Text(Content)));
+            p.Append(new Run(new Text(ContentText)));
             return p;          
         }
     }

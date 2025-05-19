@@ -12,10 +12,10 @@ namespace WordParserLibrary.Model
         public Tiret(Paragraph paragraph, Letter parent, int ordinal = 1) : base(paragraph, parent)
         {
             ContentParser tiret = new ContentParser(this);
-            Content = tiret.Content;
+            ContentText = tiret.Content;
             Number = ordinal;
             bool isAdjacent = true;
-            Log.Information("Tiret: {Number} - {Content}", Number, Content.Substring(0, Math.Min(Content.Length, 100)));
+            Log.Information("Tiret: {Number} - {Content}", Number, ContentText.Substring(0, Math.Min(ContentText.Length, 100)));
             while (paragraph.NextSibling() is Paragraph nextParagraph 
                     && nextParagraph.StyleId("TIR") != true
                     && nextParagraph.StyleId("LIT") != true
@@ -50,7 +50,7 @@ namespace WordParserLibrary.Model
                 new XAttribute("id", BuildId()));
             if (generateGuids) newElement.Add(new XAttribute("guid", Guid));
             newElement.AddFirst(new XElement(XmlConstants.Number, Number));
-            newElement.Add(new XElement("text", Content));
+            newElement.Add(new XElement("text", ContentText));
             foreach (var amendmentOperation in AmendmentOperations)
             {
                 newElement.Add(amendmentOperation.ToXML(generateGuids));

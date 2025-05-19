@@ -12,7 +12,7 @@ namespace WordParserLibrary.Model
 
         public override string ToString()
         {
-            return $"{Type}, {AmendmentTarget}, {AmendmentObject}";
+            return $"Typ: {Type},\nCel: {AmendmentTarget},\nObiekt: {AmendmentObjectType.ToFriendlyString()} {AmendmentObject}";
         }
 
         public XElement ToXML(bool generateGuids)

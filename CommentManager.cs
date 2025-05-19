@@ -10,10 +10,9 @@ namespace WordParserLibrary
         public MainDocumentPart MainPart { get; }
 
 
-        public CommentManager(LegalAct legalAct)
+        public CommentManager(MainDocumentPart mainDocumentPart)
         {
-            _legalAct = legalAct;
-            MainPart = legalAct.MainPart;
+            MainPart = mainDocumentPart;
         }
 
         public void RemoveSystemComments()
@@ -61,7 +60,7 @@ namespace WordParserLibrary
                 commentPart.Comments = new Comments();
             }
 
-            var commentId = commentPart.Comments.Elements<Comment>().Count().ToString();
+            var commentId = "sys_" + commentPart.Comments.Elements<Comment>().Count().ToString();
             var comment = new Comment { Id = commentId, Author = "System", Date = DateTime.Now };
             comment.AppendChild(new Paragraph(new Run(new Text(commentText))));
             commentPart.Comments.Append(comment);
@@ -84,10 +83,10 @@ namespace WordParserLibrary
                     firstRun.InsertBeforeSelf(commentRangeStart);
                     firstRun.InsertAfterSelf(commentRangeEnd);
                 }
-                // else
-                // {
-                //     paragraph.InsertBefore(commentRangeStart, paragraph.FirstChild);
-                // }
+                else
+                {
+                    paragraph.InsertBefore(commentRangeStart, paragraph.FirstChild);
+                }
 
                 // if (lastRun != null)
                 // {
@@ -101,6 +100,7 @@ namespace WordParserLibrary
 
             var commentReference = new CommentReference { Id = commentId };
             element.AppendChild(commentReference);
+            commentPart.Comments.Save();
         }
 
 
