@@ -6,40 +6,48 @@ using System.Xml.Linq;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Serilog;
+using WordParserLibrary.Helpers;
 
 namespace WordParserLibrary.Model
 {
-    public class Article : BaseEntity, IXmlConvertible {
+    /// <summary>
+    /// Informacje o publikatorze (np. Dziennik Ustaw).
+    /// </summary>
+    public class JournalInfo
+    {
+        public int Year { get; set; }
+        public List<int> Positions { get; set; } = new List<int>();
+        public string SourceString { get; set; } // np. "Dz. U. z 2024 r. poz. 964"
+
+        public override string ToString()
+        {
+            return $"Rok: {Year}, Pozycje: {string.Join(", ", Positions)} (Fragment źródłowy: \"{SourceString}\")";
+        }
+    }
+
+    public class Article : BaseEntity, IXmlConvertible
+    {
+        LegalAct ParentLegalAct { get; set; }
         public string Number { get; set; } = string.Empty;
-        public bool IsAmending { get; set; } = false;
-        public string PublicationYear { get; set; } = string.Empty;
-        public string PublicationNumber { get; set; } = string.Empty;
+        public bool IsAmending => Journals.Count > 0;
+        public List<JournalInfo> Journals { get; set; } = new List<JournalInfo>();
         public List<Subsection> Subsections { get; set; } = new List<Subsection>();
         //TODO: For test purposes only, remove later
-        public List<string> AmendmentList { get; set; } = new List<string>();
+        public List<string> AllAmendments { get; set; } = new List<string>();
 
-        public Article(Paragraph paragraph) : base(paragraph, null)
+        public Article(Paragraph paragraph, LegalAct legalAct) : base(paragraph, null)
         {
-            ContentParser article = new ContentParser(this);
-            article.ParseArticle();
-            if (article.ParserError)
-            {
-                Log.Error("Error parsing article: {ErrorMessage}", article.ErrorMessage);
-                return;
-            }
-            Number = article.Number;
-            IsAmending = !string.IsNullOrEmpty(article.PublicationNumber) && !string.IsNullOrEmpty(article.PublicationYear);
-            if (IsAmending)
-            {
-                PublicationNumber = LegalReference.PublicationNumber = article.PublicationNumber;
-                PublicationYear = LegalReference.PublicationYear = article.PublicationYear;
-            }
+            ParentLegalAct = legalAct;
+            EffectiveDate = legalAct.EffectiveDate;
+            EntityType = "ART";
+            ParagraphParser paragraphParser = new ParagraphParser();
+            paragraphParser.ParseParagraph(this);
+            Log.Information("Article: {Number} - {Content}", Number, ContentText.Substring(0, Math.Min(ContentText.Length, 50)));
             // Każdy artykuł zawiera co najmniej jeden ustęp, którego treść jest zawarta w treści artykułu
             ContentText = String.Empty;
-            Log.Information("Article: {Number} - {Content}", Number, ContentText.Substring(0, Math.Min(ContentText.Length, 50)));
             var firstSubsection = new Subsection(paragraph, this);
             Subsections = [firstSubsection];
-            while (paragraph.NextSibling() is Paragraph nextParagraph 
+            while (paragraph.NextSibling() is Paragraph nextParagraph
                     && nextParagraph.StyleId("ART") != true)
             {
                 if (nextParagraph.StyleId("UST") == true)
@@ -58,10 +66,12 @@ namespace WordParserLibrary.Model
             newElement.AddFirst(new XElement(XmlConstants.Number, Number));
             if (IsAmending)
             {
-                newElement.Add(
-                new XElement("publication",
-                    new XAttribute("year", PublicationYear),
-                    new XAttribute("number", PublicationNumber)));
+                foreach (var journal in Journals)
+                {
+                    newElement.Add(new XElement("publication",
+                        new XAttribute("year", journal.Year),
+                        new XAttribute("positions", string.Join(",", journal.Positions))));
+                }
             }
             foreach (var subsection in Subsections)
             {
@@ -70,7 +80,7 @@ namespace WordParserLibrary.Model
             return newElement;
         }
 
-        public string BuildId()
+        public override string BuildId()
         {
             return $"art_{Number}";
         }

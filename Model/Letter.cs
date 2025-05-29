@@ -14,6 +14,7 @@ namespace WordParserLibrary.Model
         public Letter(Paragraph paragraph, Point parent) : base(paragraph, parent)
         {
             EntityType = "LIT";
+            EffectiveDate = parent.EffectiveDate;
             ContentParser letter = new ContentParser(this);
             letter.ParseOrdinal();
             if (letter.ParserError)
@@ -76,7 +77,7 @@ namespace WordParserLibrary.Model
             }
             return newElement;
         }
-        public string BuildId()
+        public override string BuildId()
         {
             var parentId = (Parent as Point)?.BuildId();
             return parentId != null ? $"{parentId}.lit_{Ordinal}" : $"lit_{Ordinal}";

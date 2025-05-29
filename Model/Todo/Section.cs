@@ -13,7 +13,7 @@ namespace WordParserLibrary.Model
 
         internal void AddArticle(Paragraph paragraph)
         {
-            var article = new Article(paragraph);
+            var article = new Article(paragraph, null);
             Articles.Add(article);
         }
     }

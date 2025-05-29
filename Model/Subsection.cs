@@ -16,6 +16,7 @@ namespace WordParserLibrary.Model
         public Subsection(Paragraph paragraph, Article article) : base(paragraph, article)
         {
             EntityType = "UST";
+            EffectiveDate = article.EffectiveDate;
             ContentParser subsection = new ContentParser(this);
             subsection.ParseSubsection();
             if (subsection.ParserError)
@@ -76,7 +77,7 @@ namespace WordParserLibrary.Model
             return newElement;
         }
 
-        public string BuildId()
+        public override string BuildId()
         {
             var parentId = (Parent as Article)?.BuildId();
             return parentId != null ? $"{parentId}.ust_{Number}" : $"ust_{Number}";

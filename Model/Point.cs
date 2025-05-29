@@ -11,6 +11,7 @@ namespace WordParserLibrary.Model
         public Point(Paragraph paragraph, Subsection parent) : base(paragraph, parent)
         {
             EntityType = "PKT";
+            EffectiveDate = parent.EffectiveDate;
             ContentParser point = new ContentParser(this);
             point.ParseOrdinal();
             if (point.ParserError)
@@ -71,7 +72,7 @@ namespace WordParserLibrary.Model
             return newElement;
         }
 
-        public string BuildId()
+        public override string BuildId()
         {
             var parentId = (Parent as Subsection)?.BuildId();
             return parentId != null ? $"{parentId}.pkt_{Number}" : $"pkt_{Number}";

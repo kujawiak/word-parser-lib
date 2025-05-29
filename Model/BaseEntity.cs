@@ -6,7 +6,7 @@ using System.Text;
 
 namespace WordParserLibrary.Model
 {
-    public class BaseEntity 
+    public abstract class BaseEntity 
     {
         public BaseEntity? Parent { get; set; }
         public Article? Article { get; set; }
@@ -24,12 +24,14 @@ namespace WordParserLibrary.Model
         public bool? Error { get; set; }
         public string? ErrorMessage { get; set; }
         public string EntityType { get; set; } = string.Empty;
+        public DateTime EffectiveDate { get; set; }
 
         public BaseEntity(Paragraph paragraph, BaseEntity? parent)
         {
             if (parent != null)
             {
                 Parent = parent;
+                EffectiveDate = parent.EffectiveDate;
                 switch (parent)
                 {
                     case Article article:
@@ -125,5 +127,7 @@ namespace WordParserLibrary.Model
 
             return contextBuilder.ToString().Trim();
         }
+
+        public abstract string BuildId();
     }
 }

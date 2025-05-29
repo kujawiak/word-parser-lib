@@ -17,16 +17,19 @@ namespace WordParserLibrary
         public XmlGenerator XmlGenerator { get; }
         public CommentManager CommentManager { get; }
         public DocxGenerator DocxGenerator { get; set; }
+        public XlsxGenerator XlsxGenerator { get; set; }
 
         public Title Title { get; set; }
+        public DateTime EffectiveDate { get; set; }
         public List<Article> Articles { get; set; } = new List<Article>();
+        
 
-        public LegalAct(WordprocessingDocument wordDoc)
+        public LegalAct(WordprocessingDocument wordDocument)
         {
             LoggerConfig.ConfigureLogger();
             Log.Information("[LegalAct.Constructor]\tTworzenie instancji LegalAct");
             
-            WordDocument = wordDoc;
+            WordDocument = wordDocument;
             MainPart = WordDocument.MainDocumentPart ?? throw new InvalidOperationException("MainDocumentPart is null.");
             XmlDocument = new XmlDocument();
 
@@ -34,6 +37,7 @@ namespace WordParserLibrary
             XmlGenerator = new XmlGenerator(this);
             CommentManager = new CommentManager(MainPart);
             DocxGenerator = new DocxGenerator(this);
+            XlsxGenerator = new XlsxGenerator(this);
 
             Title = new Title(MainPart.Document.Descendants<Paragraph>()
                                         .Where(p => p.ParagraphProperties != null 
@@ -41,6 +45,13 @@ namespace WordParserLibrary
             // Title.Parts.Add(new Part());                                // Dział #1
             // Title.Parts[0].Chapters.Add(new Chapter());                 // Rozdział #1
             // Title.Parts[0].Chapters[0].Sections.Add(new Section());     // Oddział #1
+
+            var dateParagraph = MainPart.Document.Descendants<Paragraph>()
+                                        .Where(p => p.ParagraphProperties != null && p.StyleId("DATAAKTU") == true)
+                                        .FirstOrDefault() ?? throw new InvalidOperationException("Effective date paragraph not found");
+
+            EffectiveDate = dateParagraph.InnerText.ExtractDate();
+            Log.Information("[LegalAct.Constructor]\tData wejścia w życie: {EffectiveDate}", EffectiveDate);
 
             foreach (var paragraph in MainPart.Document.Descendants<Paragraph>()
                                             .Where(p => p.InnerText.StartsWith("Art.") || p.InnerText.StartsWith("§"))
@@ -63,20 +74,14 @@ namespace WordParserLibrary
 
                 if (paragraphStyle != null && paragraphStyle?.ToString()?.StartsWith("ART") == true)
                 {
-                    Articles.Add(new Article(paragraph));
+                    Articles.Add(new Article(paragraph, this));
                 }
             }
-        }
-    
-        public void Validate()
-        {
-            DocumentProcessor.CleanParagraphProperties();
-            DocumentProcessor.MergeRuns();
-            DocumentProcessor.MergeTexts();
         }
 
         public MemoryStream GetStream(List<string> stringList)
         {
+
             var memoryStream = new MemoryStream();
             if (stringList != null && stringList.Any())
             {
@@ -98,7 +103,10 @@ namespace WordParserLibrary
                 }
                 if (stringList.Contains("VALIDATE"))
                 {
-                    Validate();
+                    DocumentProcessor.CleanParagraphProperties();
+                    DocumentProcessor.MergeRuns();
+                    DocumentProcessor.MergeTexts();
+                    DocumentProcessor.Validate();   
                 }
                 if (stringList.Contains("HYPERLINKS"))
                 {
@@ -115,12 +123,6 @@ namespace WordParserLibrary
             }
             WordDocument.Clone(memoryStream);
             return memoryStream;
-        }
-
-        private StringValue? GetStyleID(string styleName = "Normalny")
-        {
-            return MainPart.StyleDefinitionsPart?.Styles?.Descendants<Style>()
-                                            .FirstOrDefault(s => s.StyleName?.Val == styleName)?.StyleId;
         }
 
         public void Save()
@@ -143,9 +145,9 @@ namespace WordParserLibrary
             var allAmendments = new List<string>();
             foreach (Article article in Articles)
             {
-                if (article.AmendmentList != null && article.AmendmentList.Any())
+                if (article.AllAmendments != null && article.AllAmendments.Any())
                 {
-                    allAmendments.AddRange(article.AmendmentList);
+                    allAmendments.AddRange(article.AllAmendments);
                 }
             }
             if (allAmendments.Any())

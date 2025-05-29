@@ -11,6 +11,8 @@ namespace WordParserLibrary.Model
         public List<Amendment> Amendments { get; set; } = new List<Amendment>();
         public Tiret(Paragraph paragraph, Letter parent, int ordinal = 1) : base(paragraph, parent)
         {
+            EntityType = "TIR";
+            EffectiveDate = parent.EffectiveDate;
             ContentParser tiret = new ContentParser(this);
             ContentText = tiret.Content;
             Number = ordinal;
@@ -57,7 +59,7 @@ namespace WordParserLibrary.Model
             }
             return newElement;
         }
-        public string BuildId()
+        public override string BuildId()
         {
             var parentId = (Parent as Letter)?.BuildId();
             return parentId != null ? $"{parentId}.tir_{Number}" : $"tir_{Number}";

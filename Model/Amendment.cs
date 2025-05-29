@@ -19,7 +19,7 @@ namespace WordParserLibrary.Model
             Parent = parent;
             Paragraph = paragraph;
             //TODO: For testing purposes only
-            Parent?.Article?.AmendmentList.Add(Context);
+            Parent?.Article?.AllAmendments.Add(Context);
             StyleValue = "Z";
         }
 
@@ -30,6 +30,12 @@ namespace WordParserLibrary.Model
                 new XElement("content", ContentText)
             );
             return amendmentElement;
+        }
+
+        public override string BuildId()
+        {
+            var parentId = (Parent as Letter)?.BuildId();
+            return parentId != null ? $"{parentId}.amendment" : $"amendment";
         }
     }
 }
