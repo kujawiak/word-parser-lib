@@ -30,7 +30,8 @@ namespace WordParserLibrary
 
             if (!match.Success)
             {
-                throw new ArgumentException("Nie udało się sparsować daty z ciągu wejściowego", nameof(input));
+                // throw new ArgumentException("Nie udało się sparsować daty z ciągu wejściowego", nameof(input));
+                return DateTime.MinValue; // Zwracamy minimalną datę, jeśli parsowanie się nie powiodło
             }
 
             var day = int.Parse(match.Groups[1].Value);
