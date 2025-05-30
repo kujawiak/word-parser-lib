@@ -13,9 +13,6 @@ namespace WordParserLibrary.Model
         public Title(Paragraph paragraph) : base(paragraph, null)
         {
         }
-        public override string BuildId()
-        {
-            return $"title";
-        }
+        public override string Id => $"title-{Guid}";
     }
 }

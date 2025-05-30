@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
@@ -20,6 +21,16 @@ namespace WordParserLibrary.Model
         public string SourceString { get; set; } // np. "Dz. U. z 2024 r. poz. 964"
 
         public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (var position in Positions)
+            {
+                sb.AppendLine($"DU.{Year}.{position}");
+            }
+            return sb.ToString();
+        }
+
+        public string ToStringLong()
         {
             return $"Rok: {Year}, Pozycje: {string.Join(", ", Positions)} (Fragment źródłowy: \"{SourceString}\")";
         }
@@ -61,7 +72,7 @@ namespace WordParserLibrary.Model
         public XElement ToXML(bool generateGuids)
         {
             var newElement = new XElement(XmlConstants.Article,
-                new XAttribute("id", BuildId()));
+                new XAttribute("id", Id));
             if (generateGuids) newElement.Add(new XAttribute("guid", Guid));
             newElement.AddFirst(new XElement(XmlConstants.Number, Number));
             if (IsAmending)
@@ -80,10 +91,7 @@ namespace WordParserLibrary.Model
             return newElement;
         }
 
-        public override string BuildId()
-        {
-            return $"art_{Number}";
-        }
+        public override string Id => $"art_{Number}";
 
         public Paragraph ToParagraph()
         {

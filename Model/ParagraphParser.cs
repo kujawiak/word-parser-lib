@@ -82,10 +82,10 @@ public class ParagraphParser
 
     public void ParseParagraph(BaseEntity entity)
     {
-        if (entity is Article)
+        if (entity is Article article)
         {
-            ParseJournalReferences(entity as Article);
-            ParseOrdinalNumber(entity as Article);
+            ParseJournalReferences(article);
+            ParseOrdinalNumber(article);
         }
     }
 
@@ -149,7 +149,7 @@ public class ParagraphParser
         if (article == null || string.IsNullOrEmpty(article.ContentText))
             return;
 
-        var currentYear = DateTime.Now.Year;
+        var effectiveYear = article.EffectiveDate.Year;
         var journalsByYear = new Dictionary<int, JournalInfo>();
 
         // Przeszukaj tekst artykułu pod kątem publikatorów "Dz. U."
@@ -157,7 +157,7 @@ public class ParagraphParser
         {
             string sourceMatch = m.Groups["source"].Value;
             string yearStr = m.Groups["year"].Success ? m.Groups["year"].Value : null;
-            int year = string.IsNullOrEmpty(yearStr) ? currentYear : int.Parse(yearStr);
+            int year = string.IsNullOrEmpty(yearStr) ? effectiveYear : int.Parse(yearStr);
 
             string positionsStr = m.Groups["positions"].Success ? m.Groups["positions"].Value : "";
 

@@ -63,7 +63,7 @@ namespace WordParserLibrary.Model
         public XElement ToXML(bool generateGuids)
         {
             var newElement = new XElement(XmlConstants.Letter,
-                new XAttribute("id", BuildId()));
+                new XAttribute("id", Id));
             if (generateGuids) newElement.Add(new XAttribute("guid", Guid));
             newElement.AddFirst(new XElement(XmlConstants.Number, Ordinal));
             newElement.Add(new XElement("text", ContentText));
@@ -77,11 +77,8 @@ namespace WordParserLibrary.Model
             }
             return newElement;
         }
-        public override string BuildId()
-        {
-            var parentId = (Parent as Point)?.BuildId();
-            return parentId != null ? $"{parentId}.lit_{Ordinal}" : $"lit_{Ordinal}";
-        }
+
+        public override string Id => $"{Parent?.Id ?? string.Empty}.lit_{Ordinal}";
 
         public Paragraph ToParagraph()
         {
@@ -94,7 +91,7 @@ namespace WordParserLibrary.Model
             p.Append(new Run(new Text($"{Ordinal})")));
             p.Append(new Run(new TabChar()));
             p.Append(new Run(new Text(ContentText)));
-            return p;          
+            return p;
         }
     }
 }

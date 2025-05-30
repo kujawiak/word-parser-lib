@@ -57,7 +57,7 @@ namespace WordParserLibrary.Model
         public XElement ToXML(bool generateGuids)
         {
             var newElement = new XElement(XmlConstants.Point,
-                new XAttribute("id", BuildId()));
+                new XAttribute("id", Id));
             if (generateGuids) newElement.Add(new XAttribute("guid", Guid));
             newElement.AddFirst(new XElement(XmlConstants.Number, Number));
             newElement.Add(new XElement("text", ContentText));
@@ -72,19 +72,15 @@ namespace WordParserLibrary.Model
             return newElement;
         }
 
-        public override string BuildId()
-        {
-            var parentId = (Parent as Subsection)?.BuildId();
-            return parentId != null ? $"{parentId}.pkt_{Number}" : $"pkt_{Number}";
-        }
+        public override string Id => $"{Parent?.Id ?? string.Empty}.pkt_{Number}";
 
         public Paragraph ToParagraph()
         {
-             var p = new Paragraph()
+            var p = new Paragraph()
             {
                 ParagraphProperties = new ParagraphProperties(
-                    new ParagraphStyleId { Val = "PKTpunkt" }
-                )
+                   new ParagraphStyleId { Val = "PKTpunkt" }
+               )
             };
             p.Append(new Run(new Text($"{Number})")));
             p.Append(new Run(new TabChar()));

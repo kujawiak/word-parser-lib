@@ -128,6 +128,6 @@ namespace WordParserLibrary.Model
             return contextBuilder.ToString().Trim();
         }
 
-        public abstract string BuildId();
+        public abstract string Id { get; }
     }
 }
