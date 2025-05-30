@@ -28,13 +28,26 @@ namespace WordParserLibrary
                 var sheetData = new SheetData();
                 worksheetPart.Worksheet = new Worksheet(sheetData);
 
+                // Set column widths to auto
+                var columns = new Columns();
+                columns.Append(new Column { Min = 1, Max = 1, Width = 60, CustomWidth = true, BestFit = true });  // A
+                columns.Append(new Column { Min = 2, Max = 2, Width = 8, CustomWidth = true, BestFit = true });  // B
+                columns.Append(new Column { Min = 3, Max = 3, Width = 30, CustomWidth = true, BestFit = true });  // C
+                columns.Append(new Column { Min = 4, Max = 4, Width = 20, CustomWidth = true, BestFit = true });  // D
+                columns.Append(new Column { Min = 5, Max = 5, Width = 25, CustomWidth = true, BestFit = true });  // E
+                worksheetPart.Worksheet.InsertAt(columns, 0);
+
                 // Add header row
                 var headerRow = new Row { RowIndex = 1 };
                 headerRow.Append(
                     SpreadsheetHelper.CreateTextCell("A", 1, "Content"),
-                    SpreadsheetHelper.CreateTextCell("B", 1, "ID")
+                    SpreadsheetHelper.CreateTextCell("B", 1, "Typ"),
+                    SpreadsheetHelper.CreateTextCell("C", 1, "ID"),
+                    SpreadsheetHelper.CreateTextCell("D", 1, "Journal"),
+                    SpreadsheetHelper.CreateTextCell("E", 1, "Data wejścia w życie")
                 );
                 sheetData.Append(headerRow);
+
 
                 // Add articles and their children
                 uint currentRow = 2;
@@ -118,8 +131,10 @@ namespace WordParserLibrary
             var row = new Row { RowIndex = rowIndex };
             row.Append(
                 SpreadsheetHelper.CreateTextCell("A", rowIndex, entity.ContentText),
-                SpreadsheetHelper.CreateTextCell("B", rowIndex, entity.BuildId()),
-                SpreadsheetHelper.CreateTextCell("C", rowIndex, entity.EffectiveDate.ToString("yyyy-MM-dd"))
+                SpreadsheetHelper.CreateTextCell("B", rowIndex, entity.EntityType),
+                SpreadsheetHelper.CreateTextCell("C", rowIndex, entity.Id),
+                SpreadsheetHelper.CreateTextCell("D", rowIndex, entity.Article?.Journals.FirstOrDefault()?.ToString() ?? string.Empty),
+                SpreadsheetHelper.CreateTextCell("E", rowIndex, entity.EffectiveDate.ToString("yyyy-MM-dd"))
             );
             return row;
         }
