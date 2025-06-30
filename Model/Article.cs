@@ -58,7 +58,7 @@ namespace WordParserLibrary.Model
             ContentText = String.Empty;
             var firstSubsection = new Subsection(paragraph, this);
             Subsections = [firstSubsection];
-            while (paragraph.NextSibling() is Paragraph nextParagraph
+            while (paragraph.NextSibling<Paragraph>() is Paragraph nextParagraph
                     && nextParagraph.StyleId("ART") != true)
             {
                 if (nextParagraph.StyleId("UST") == true)

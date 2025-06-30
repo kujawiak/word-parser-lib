@@ -27,23 +27,32 @@ namespace WordParserLibrary.Model
             Log.Information("Letter: {Ordinal} - {Content}", Ordinal, ContentText.Substring(0, Math.Min(ContentText.Length, 100)));
             bool isAdjacent = true;
             var tiretCount = 1;
-            while (paragraph.NextSibling() is Paragraph nextParagraph 
-                    && nextParagraph.StyleId("LIT") != true
-                    && nextParagraph.StyleId("PKT") != true
-                    && nextParagraph.StyleId("UST") != true
-                    && nextParagraph.StyleId("ART") != true)
+            while (paragraph.NextSibling<Paragraph>() is Paragraph nextParagraph)
             {
-                if (nextParagraph.StyleId("TIR") == true)
+                string? styleId = nextParagraph.StyleId();
+                if (string.IsNullOrEmpty(styleId))
+                {
+                    Error = true;
+                    ErrorMessage = $"Unexpected paragraph style in paragraph: {paragraph.InnerText}";
+                    Log.Error(ErrorMessage);
+                    paragraph = nextParagraph;
+                    continue;
+                }
+                if (styleId.StartsWith("LIT") || styleId.StartsWith("PKT") || styleId.StartsWith("UST") || styleId.StartsWith("ART"))
+                {
+                    break;
+                }
+                else if (styleId.StartsWith("TIR") == true)
                 {
                     Tirets.Add(new Tiret(nextParagraph, this, tiretCount));
                     tiretCount++;
                     isAdjacent = false;
                 }
-                else if (nextParagraph.StyleId("Z") == true && isAdjacent == true)
+                else if (styleId.StartsWith("Z") == true && isAdjacent == true)
                 {
                     Amendments.Add(new Amendment(nextParagraph, this));
                 }
-                else 
+                else
                 {
                     isAdjacent = false;
                 }

@@ -28,21 +28,32 @@ namespace WordParserLibrary.Model
             ContentText = subsection.Content;
             bool isAdjacent = true;
             Log.Information("Subsection: {Number} - {Content}", Number, ContentText.Substring(0, Math.Min(ContentText.Length, 100)));
-            while (paragraph.NextSibling() is Paragraph nextParagraph 
-                    && nextParagraph.StyleId("UST") != true
-                    && nextParagraph.StyleId("ART") != true)
+            while (paragraph.NextSibling<Paragraph>() is Paragraph nextParagraph)
             {
-                if (nextParagraph.StyleId("PKT") == true)
+                string? styleId = nextParagraph.StyleId();
+                if (string.IsNullOrEmpty(styleId))
+                {
+                    Error = true;
+                    ErrorMessage = $"Unexpected paragraph style in paragraph: {paragraph.InnerText}";
+                    Log.Error(ErrorMessage);
+                    paragraph = nextParagraph;
+                    continue;
+                }
+                if (styleId.StartsWith("UST") || styleId.StartsWith("ART"))
+                {
+                    break;
+                }
+                else if (styleId.StartsWith("PKT"))
                 {
                     Points.Add(new Point(nextParagraph, this));
                     isAdjacent = false;
                 }
-                else if (nextParagraph.StyleId("Z") == true && isAdjacent)
+                else if (styleId.StartsWith("Z") && isAdjacent)
                 {
                     Amendments.Add(new Amendment(nextParagraph, this));
                     AmendmentOperations?.FirstOrDefault()?.Amendments.Add(new Amendment(nextParagraph, this));
                 }
-                else 
+                else
                 {
                     isAdjacent = false;
                 }

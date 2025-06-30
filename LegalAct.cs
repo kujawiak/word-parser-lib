@@ -69,10 +69,8 @@ namespace WordParserLibrary
                     CommentManager.AddComment(paragraph, "Brak stylu paragrafu!");
                     continue;
                 }
-                
-                var paragraphStyle = paragraph.ParagraphProperties?.ParagraphStyleId?.Val;
 
-                if (paragraphStyle != null && paragraphStyle?.ToString()?.StartsWith("ART") == true)
+                if (paragraph.StyleId("ART") == true)
                 {
                     Articles.Add(new Article(paragraph, this));
                 }
