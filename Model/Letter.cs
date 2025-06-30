@@ -22,7 +22,7 @@ namespace WordParserLibrary.Model
                 Log.Error("Error parsing article: {ErrorMessage}", letter.ErrorMessage);
                 return;
             }
-            Ordinal = letter.Number;
+            Ordinal = letter.Number.ToString();
             ContentText = letter.Content;
             Log.Information("Letter: {Ordinal} - {Content}", Ordinal, ContentText.Substring(0, Math.Min(ContentText.Length, 100)));
             bool isAdjacent = true;

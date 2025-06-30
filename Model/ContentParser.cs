@@ -5,7 +5,7 @@ namespace WordParserLibrary.Model
     public class ContentParser
     {
         private BaseEntity entity = null!;
-        public string Number { get; private set; } = string.Empty;
+        public EntityNumber Number { get; private set; }
         public string Content { get; private set; } = string.Empty;
 
         public bool ParserError { get; private set; } = false;
@@ -16,6 +16,8 @@ namespace WordParserLibrary.Model
         {
             this.entity = entity;
             HasAmendmentOperation = entity.ContentText.Contains("uchyla się");
+            Number = new EntityNumber(entity.Paragraph);
+            entity.Number = Number; // Ensure the entity's number is set
         }
         
         public ContentParser ParseSubsection()
@@ -27,7 +29,7 @@ namespace WordParserLibrary.Model
                 var matchWithY = Regex.Match(text, @"^(Art\.|§)\s\d+\.\s(\d+\w*)\.\s(.*)$");
                 if (matchWithY.Success)
                 {
-                    Number = matchWithY.Groups[2].Value;
+                    Number.LexicalPart = matchWithY.Groups[2].Value;
                     Content = matchWithY.Groups[3].Value;
                     return this;
                 }
@@ -36,7 +38,7 @@ namespace WordParserLibrary.Model
                 var matchWithoutY = Regex.Match(text, @"^(Art\.|§)\s\d+\.\s?(.*)$");
                 if (matchWithoutY.Success)
                 {
-                    Number = "1"; // Domyślnie ustawiamy numer na 1, jeśli nie ma Y
+                    Number.NumericPart = 1; // Domyślnie ustawiamy numer na 1, jeśli nie ma Y
                     Content = matchWithoutY.Groups[2].Value;
                     return this;
                 }
@@ -52,7 +54,7 @@ namespace WordParserLibrary.Model
                 var match = Regex.Match(text, @"^(\d+\w*)\.\s?(.*)$");
                 if (match.Success)
                 {
-                    Number = match.Groups[1].Value;
+                    Number.LexicalPart = match.Groups[1].Value;
                     Content = match.Groups[2].Value;
                     return this;
                 }
@@ -79,7 +81,7 @@ namespace WordParserLibrary.Model
             var match = Regex.Match(text, @"^([^\)]+)\)[\s]?(.*)");
             if (match.Success)
             {
-                Number = match.Groups[1].Value;
+                Number.LexicalPart = match.Groups[1].Value;
                 Content = match.Groups[2].Value;
                 return this;
             }

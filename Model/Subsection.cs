@@ -10,7 +10,6 @@ namespace WordParserLibrary.Model
 {
      public class Subsection : BaseEntity, IAmendable, IXmlConvertible {
         public List<Point> Points { get; set; } = new List<Point>();
-        public string Number { get; set; }  = string.Empty;
         public List<Amendment> Amendments { get; set; } = new List<Amendment>();
 
         public Subsection(Paragraph paragraph, Article article) : base(paragraph, article)
@@ -24,7 +23,6 @@ namespace WordParserLibrary.Model
                 Log.Error("Error parsing subsection: {ErrorMessage}", subsection.ErrorMessage);
                 return;
             }
-            Number = subsection.Number;
             ContentText = subsection.Content;
             bool isAdjacent = true;
             Log.Information("Subsection: {Number} - {Content}", Number, ContentText.Substring(0, Math.Min(ContentText.Length, 100)));

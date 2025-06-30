@@ -7,7 +7,6 @@ namespace WordParserLibrary.Model
     public class Point : BaseEntity, IAmendable, IXmlConvertible {
         public List<Letter> Letters { get; set; } = new List<Letter>();
         public List<Amendment> Amendments { get; set; } = new List<Amendment>();
-        public string Number { get; set; } = string.Empty;
         public Point(Paragraph paragraph, Subsection parent) : base(paragraph, parent)
         {
             EntityType = "PKT";
@@ -19,7 +18,6 @@ namespace WordParserLibrary.Model
                 Log.Error("Error parsing article: {ErrorMessage}", point.ErrorMessage);
                 return;
             }
-            Number = point.Number;
             ContentText = point.Content;
             bool isAdjacent = true;
             Log.Information("Point: {Number} - {Content}", Number, ContentText.Substring(0, Math.Min(ContentText.Length, 100)));

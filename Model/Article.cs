@@ -39,7 +39,6 @@ namespace WordParserLibrary.Model
     public class Article : BaseEntity, IXmlConvertible
     {
         LegalAct ParentLegalAct { get; set; }
-        public string Number { get; set; } = string.Empty;
         public bool IsAmending => Journals.Count > 0;
         public List<JournalInfo> Journals { get; set; } = new List<JournalInfo>();
         public List<Subsection> Subsections { get; set; } = new List<Subsection>();

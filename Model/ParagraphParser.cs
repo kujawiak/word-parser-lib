@@ -96,7 +96,7 @@ public class ParagraphParser
         var match = Regex.Match(article.ContentText, @"^(Art\.|§)\s*([\w\d]+)\.?\s*(.*)");
         if (match.Success)
         {
-            article.Number = match.Groups[2].Value.Trim();
+            article.Number.LexicalPart = match.Groups[2].Value.Trim();
             article.ContentText = match.Groups[3].Value.Trim();
         }
         else

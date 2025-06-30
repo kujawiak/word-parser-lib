@@ -15,12 +15,12 @@ namespace WordParserLibrary.Model
         public Letter? Letter { get; set; }
         public Tiret? Tiret { get; set; }
         public Guid Guid { get; set; } = Guid.NewGuid();
-        Content Content { get; set; }
+        public EntityNumber Number { get; set; }
         public string ContentText { get; set; }
         public string Context { get; set; }
         public Paragraph Paragraph { get; set; }
         public List<AmendmentOperation> AmendmentOperations { get; set; }
-        public LegalReference LegalReference { get; set; } = new LegalReference();
+        public LegalReference LegalReference { get; set; } = new LegalReference(); // TODO: remove when AI method of amendment identification is introduced
         public bool? Error { get; set; }
         public string? ErrorMessage { get; set; }
         public string EntityType { get; set; } = string.Empty;
@@ -76,7 +76,7 @@ namespace WordParserLibrary.Model
             Paragraph = paragraph;
             ContentText = paragraph.InnerText.Sanitize().Trim();
             Context = GetContext() ?? ContentText;
-            Content = new Content(this);
+            Number = new EntityNumber(paragraph);
             AmendmentOperations = new List<AmendmentOperation>();
             if (Article != null && Article.IsAmending && Paragraph.StyleId("Z") == false)
             {
