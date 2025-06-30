@@ -111,7 +111,8 @@ namespace WordParserLibrary.Model
             var modificationMatch = Regex.Match(content, @"\b(art\.|ust\.|pkt)\s*\d+[a-zA-Z]?\b(?=.*otrzymuj[e,ą] brzmienie:)");
             if (modificationMatch.Success)
             // return (AmendmentOperationType.Modification, modificationMatch.Value);
-                return new AmendmentTarget() {
+                return new AmendmentTarget()
+                {
                     OperationType = AmendmentOperationType.Modification,
                     ObjectType = DetermineAmendmentObjectType(modificationMatch.Value),
                     Target = modificationMatch.Value
