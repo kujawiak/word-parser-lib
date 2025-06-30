@@ -35,6 +35,7 @@ namespace WordParserLibrary
                 columns.Append(new Column { Min = 3, Max = 3, Width = 30, CustomWidth = true, BestFit = true });  // C
                 columns.Append(new Column { Min = 4, Max = 4, Width = 20, CustomWidth = true, BestFit = true });  // D
                 columns.Append(new Column { Min = 5, Max = 5, Width = 25, CustomWidth = true, BestFit = true });  // E
+                columns.Append(new Column { Min = 6, Max = 6, Width = 20, CustomWidth = true, BestFit = true });  // F
                 worksheetPart.Worksheet.InsertAt(columns, 0);
 
                 // Add header row
@@ -44,7 +45,8 @@ namespace WordParserLibrary
                     SpreadsheetHelper.CreateTextCell("B", 1, "Typ"),
                     SpreadsheetHelper.CreateTextCell("C", 1, "ID"),
                     SpreadsheetHelper.CreateTextCell("D", 1, "Journal"),
-                    SpreadsheetHelper.CreateTextCell("E", 1, "Data wejścia w życie")
+                    SpreadsheetHelper.CreateTextCell("E", 1, "Effective Date"),
+                    SpreadsheetHelper.CreateTextCell("F", 1, "Reference")
                 );
                 sheetData.Append(headerRow);
 
@@ -134,7 +136,8 @@ namespace WordParserLibrary
                 SpreadsheetHelper.CreateTextCell("B", rowIndex, entity.EntityType),
                 SpreadsheetHelper.CreateTextCell("C", rowIndex, entity.Id),
                 SpreadsheetHelper.CreateTextCell("D", rowIndex, entity.Article?.Journals.FirstOrDefault()?.ToString() ?? string.Empty),
-                SpreadsheetHelper.CreateTextCell("E", rowIndex, entity.EffectiveDate.ToString("yyyy-MM-dd"))
+                SpreadsheetHelper.CreateTextCell("E", rowIndex, entity.EffectiveDate.ToString("yyyy-MM-dd")),
+                SpreadsheetHelper.CreateTextCell("F", rowIndex, entity.AmendmentOperations?.FirstOrDefault()?.ToString() ?? string.Empty)
             );
             return row;
         }
