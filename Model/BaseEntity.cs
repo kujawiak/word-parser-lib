@@ -127,7 +127,6 @@ namespace WordParserLibrary.Model
 
             return contextBuilder.ToString().Trim();
         }
-
         public abstract string Id { get; }
     }
 }
