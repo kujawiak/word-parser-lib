@@ -18,17 +18,15 @@ namespace WordParserLibrary
         public CommentManager CommentManager { get; }
         public DocxGenerator DocxGenerator { get; set; }
         public XlsxGenerator XlsxGenerator { get; set; }
-
         public Title Title { get; set; }
         public DateTime EffectiveDate { get; set; }
         public List<Article> Articles { get; set; } = new List<Article>();
-        
 
         public LegalAct(WordprocessingDocument wordDocument)
         {
             LoggerConfig.ConfigureLogger();
             Log.Information("[LegalAct.Constructor]\tTworzenie instancji LegalAct");
-            
+
             WordDocument = wordDocument;
             MainPart = WordDocument.MainDocumentPart ?? throw new InvalidOperationException("MainDocumentPart is null.");
             XmlDocument = new XmlDocument();
@@ -40,7 +38,7 @@ namespace WordParserLibrary
             XlsxGenerator = new XlsxGenerator(this);
 
             Title = new Title(MainPart.Document.Descendants<Paragraph>()
-                                        .Where(p => p.ParagraphProperties != null 
+                                        .Where(p => p.ParagraphProperties != null
                                                 && p.StyleId("TYTUAKT") == true).FirstOrDefault() ?? throw new InvalidOperationException("Title paragraph not found"));                                        // Tytuł #1
             // Title.Parts.Add(new Part());                                // Dział #1
             // Title.Parts[0].Chapters.Add(new Chapter());                 // Rozdział #1
@@ -75,6 +73,8 @@ namespace WordParserLibrary
                     Articles.Add(new Article(paragraph, this));
                 }
             }
+
+            SaveAmendmentList();
         }
 
         public MemoryStream GetStream(List<string> stringList)
@@ -160,7 +160,5 @@ namespace WordParserLibrary
                 Console.WriteLine("No amendments found to save.");
             }
         }
-
-
     }    
 }   
