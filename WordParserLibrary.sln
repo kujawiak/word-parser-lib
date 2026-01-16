@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordParserLibrary", "WordParserLibrary.csproj", "{2E71E67B-E625-2C2C-1EAD-63F62A01FCA8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2E71E67B-E625-2C2C-1EAD-63F62A01FCA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E71E67B-E625-2C2C-1EAD-63F62A01FCA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E71E67B-E625-2C2C-1EAD-63F62A01FCA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E71E67B-E625-2C2C-1EAD-63F62A01FCA8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C7C5B8A6-DF6D-4AA4-A3CF-B3B0C67BCC16}
+	EndGlobalSection
+EndGlobal
