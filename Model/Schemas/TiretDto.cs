@@ -9,6 +9,11 @@ namespace WordParserLibrary.Model.Schemas
         public new int Number { get; set; } = 1;
         public List<AmendmentDto> Amendments { get; set; } = new();
 
-        public override string Id => $"{Parent?.Id ?? string.Empty}.tir_{Number}";
+        public TiretDto()
+        {
+            UnitType = UnitType.Tiret;
+            EIdPrefix = "tir";
+            DisplayLabel = "tiret";
+        }
     }
 }

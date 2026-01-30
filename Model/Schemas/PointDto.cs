@@ -9,6 +9,11 @@ namespace WordParserLibrary.Model.Schemas
         public List<LetterDto> Letters { get; set; } = new();
         public List<AmendmentDto> Amendments { get; set; } = new();
 
-        public override string Id => $"{Parent?.Id ?? string.Empty}.pkt_{Number?.Value}";
+        public PointDto()
+        {
+            UnitType = UnitType.Point;
+            EIdPrefix = "pkt";
+            DisplayLabel = "pkt";
+        }
     }
 }
