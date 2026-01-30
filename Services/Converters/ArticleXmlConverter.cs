@@ -25,10 +25,10 @@ namespace WordParserLibrary.Services.Converters
                 }
             }
 
-            foreach (var subsection in article.Subsections)
+            foreach (var paragraph in article.Paragraphs)
             {
-                var subsectionConverter = new SubsectionXmlConverter();
-                newElement.Add(subsectionConverter.ToXml(subsection, generateGuids));
+                var paragraphConverter = new ParagraphXmlConverter();
+                newElement.Add(paragraphConverter.ToXml(paragraph, generateGuids));
             }
 
             return newElement;

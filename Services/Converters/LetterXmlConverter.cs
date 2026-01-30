@@ -13,7 +13,7 @@ namespace WordParserLibrary.Services.Converters
             var newElement = new XElement(XmlConstants.Letter,
                 new XAttribute("id", letter.Id));
             if (generateGuids) newElement.Add(new XAttribute("guid", letter.Guid));
-            newElement.AddFirst(new XElement(XmlConstants.Number, letter.Ordinal));
+            newElement.AddFirst(new XElement(XmlConstants.Number, letter.Number?.Value ?? string.Empty));
             newElement.Add(new XElement("text", letter.ContentText));
 
             foreach (var tiret in letter.Tirets)
