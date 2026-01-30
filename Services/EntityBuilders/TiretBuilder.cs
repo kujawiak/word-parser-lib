@@ -3,6 +3,7 @@ using Serilog;
 using WordParserLibrary.Helpers;
 using WordParserLibrary.Model;
 using WordParserLibrary.Model.Schemas;
+using WordParserLibrary.Services;
 
 namespace WordParserLibrary.Services.EntityBuilders
 {
@@ -31,10 +32,12 @@ namespace WordParserLibrary.Services.EntityBuilders
                 EffectiveDate = effectiveDate,
                 Letter = parentLetter,
                 Point = parentLetter.Point,
-                Subsection = parentLetter.Subsection,
+                Paragraph = parentLetter.Paragraph,
                 Article = parentLetter.Article,
                 Parent = parentLetter,
                 Number = ordinal,
+                // set DTO ordinal info
+                NumberDto = new EntityNumberService().Parse(ordinal.ToString()),
                 LegalReference = new LegalReferenceDto
                 {
                     PublicationNumber = parentLetter.LegalReference?.PublicationNumber,

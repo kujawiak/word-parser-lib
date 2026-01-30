@@ -3,6 +3,7 @@ using Serilog;
 using WordParserLibrary.Helpers;
 using WordParserLibrary.Model;
 using WordParserLibrary.Model.Schemas;
+using WordParserLibrary.Services;
 
 namespace WordParserLibrary.Services.EntityBuilders
 {
@@ -30,7 +31,7 @@ namespace WordParserLibrary.Services.EntityBuilders
                 EntityType = "LIT",
                 EffectiveDate = effectiveDate,
                 Point = parentPoint,
-                Subsection = parentPoint.Subsection,
+                Paragraph = parentPoint.Paragraph,
                 Article = parentPoint.Article,
                 Parent = parentPoint,
                 LegalReference = new LegalReferenceDto
@@ -47,12 +48,15 @@ namespace WordParserLibrary.Services.EntityBuilders
 
             // TODO: Parse paragraph content - użyć nowego podejścia do parsowania
             letter.ContentText = paragraph.InnerText.Sanitize().Trim();
-            letter.Ordinal = letter.ContentText;
+            
+            // Numer litery (np. 'a', 'b', 'aa') - przechowywany w Number
+            var entityNumberService = new EntityNumberService();
+            letter.Number = entityNumberService.Parse(letter.ContentText);
 
             // TODO: Obsługa błędów parsowania
 
-            Log.Information("Letter: {Ordinal} - {Content}", 
-                letter.Ordinal, 
+            Log.Information("Letter: {Number} - {Content}", 
+                letter.Number?.Value, 
                 letter.ContentText.Substring(0, Math.Min(letter.ContentText.Length, 100)));
 
             var currentParagraph = paragraph;

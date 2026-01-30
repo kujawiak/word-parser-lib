@@ -3,6 +3,7 @@ using Serilog;
 using WordParserLibrary.Helpers;
 using WordParserLibrary.Model;
 using WordParserLibrary.Model.Schemas;
+using WordParserLibrary.Services;
 
 namespace WordParserLibrary.Services.EntityBuilders
 {
@@ -22,22 +23,22 @@ namespace WordParserLibrary.Services.EntityBuilders
         /// <summary>
         /// Buduje PointDto z paragrafu i informacji o ustępie nadrzędnym.
         /// </summary>
-        public PointDto Build(Paragraph paragraph, SubsectionDto parentSubsection, DateTime effectiveDate)
+        public PointDto Build(Paragraph paragraph, ParagraphDto parentParagraph, DateTime effectiveDate)
         {
             var point = new PointDto
             {
                 Guid = Guid.NewGuid(),
                 EntityType = "PKT",
                 EffectiveDate = effectiveDate,
-                Subsection = parentSubsection,
-                Article = parentSubsection.Article,
-                Parent = parentSubsection,
+                Paragraph = parentParagraph,
+                Article = parentParagraph.Article,
+                Parent = parentParagraph,
                 LegalReference = new LegalReferenceDto
                 {
-                    PublicationNumber = parentSubsection.LegalReference?.PublicationNumber,
-                    PublicationYear = parentSubsection.LegalReference?.PublicationYear,
-                    Article = parentSubsection.LegalReference?.Article,
-                    Subsection = parentSubsection.LegalReference?.Subsection,
+                    PublicationNumber = parentParagraph.LegalReference?.PublicationNumber,
+                    PublicationYear = parentParagraph.LegalReference?.PublicationYear,
+                    Article = parentParagraph.LegalReference?.Article,
+                    Subsection = parentParagraph.LegalReference?.Subsection,
                 },
                 Letters = new(),
                 Amendments = new()
@@ -45,7 +46,9 @@ namespace WordParserLibrary.Services.EntityBuilders
 
             // TODO: Parse paragraph content - użyć nowego podejścia do parsowania
             point.ContentText = paragraph.InnerText.Sanitize().Trim();
-            point.Number = new EntityNumberDto(point.ContentText);
+            var entityNumberService = new EntityNumberService();
+            point.Number = entityNumberService.Parse(point.ContentText);
+            point.NumberDto = point.Number;
 
             // TODO: Obsługa błędów parsowania
 

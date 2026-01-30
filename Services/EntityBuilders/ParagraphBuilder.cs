@@ -3,28 +3,29 @@ using Serilog;
 using WordParserLibrary.Helpers;
 using WordParserLibrary.Model;
 using WordParserLibrary.Model.Schemas;
+using WordParserLibrary.Services;
 
 namespace WordParserLibrary.Services.EntityBuilders
 {
     /// <summary>
-    /// Builder odpowiedzialny za tworzenie SubsectionDto z paragrafu dokumentu.
-    /// Wyekstrahowana logika z konstruktora Subsection.
+    /// Builder odpowiedzialny za tworzenie ParagraphDto z paragrafu dokumentu.
+    /// Wyekstrahowana logika z konstruktora Paragraph.
     /// </summary>
-    public class SubsectionBuilder
+    public class ParagraphBuilder
     {
         private readonly LegalReferenceService _legalReferenceService;
 
-        public SubsectionBuilder(LegalReferenceService? legalReferenceService = null)
+        public ParagraphBuilder(LegalReferenceService? legalReferenceService = null)
         {
             _legalReferenceService = legalReferenceService ?? new LegalReferenceService();
         }
 
         /// <summary>
-        /// Buduje SubsectionDto z paragrafu i informacji o artykule nadrzędnym.
+        /// Buduje ParagraphDto z paragrafu i informacji o artykule nadrzędnym.
         /// </summary>
-        public SubsectionDto Build(Paragraph paragraph, ArticleDto parentArticle, DateTime effectiveDate)
+        public ParagraphDto Build(Paragraph paragraph, ArticleDto parentArticle, DateTime effectiveDate)
         {
-            var subsection = new SubsectionDto
+            var paragraphDto = new ParagraphDto
             {
                 Guid = Guid.NewGuid(),
                 EntityType = "UST",
@@ -42,14 +43,15 @@ namespace WordParserLibrary.Services.EntityBuilders
             };
 
             // Parse paragraph content
-            subsection.ContentText = paragraph.InnerText.Sanitize().Trim();
-            subsection.Number = new EntityNumberDto(subsection.ContentText);
+            paragraphDto.ContentText = paragraph.InnerText.Sanitize().Trim();
+            var entityNumberService = new EntityNumberService();
+            paragraphDto.Number = entityNumberService.Parse(paragraphDto.ContentText);
 
             // TODO: Obsługa błędów parsowania
 
-            Log.Information("Subsection: {Number} - {Content}", 
-                subsection.Number?.Value, 
-                subsection.ContentText.Substring(0, Math.Min(subsection.ContentText.Length, 100)));
+            Log.Information("Paragraph: {Number} - {Content}", 
+                paragraphDto.Number?.Value, 
+                paragraphDto.ContentText.Substring(0, Math.Min(paragraphDto.ContentText.Length, 100)));
 
             var currentParagraph = paragraph;
             while (currentParagraph?.NextSibling<Paragraph>() is Paragraph nextParagraph)
@@ -57,9 +59,9 @@ namespace WordParserLibrary.Services.EntityBuilders
                 string? styleId = nextParagraph.StyleId();
                 if (string.IsNullOrEmpty(styleId))
                 {
-                    subsection.Error = true;
-                    subsection.ErrorMessage = $"Unexpected paragraph style in paragraph: {paragraph.InnerText}";
-                    Log.Error(subsection.ErrorMessage);
+                    paragraphDto.Error = true;
+                    paragraphDto.ErrorMessage = $"Unexpected paragraph style in paragraph: {paragraph.InnerText}";
+                    Log.Error(paragraphDto.ErrorMessage);
                     currentParagraph = nextParagraph;
                     continue;
                 }
@@ -71,16 +73,16 @@ namespace WordParserLibrary.Services.EntityBuilders
                 else if (styleId.StartsWith("PKT"))
                 {
                     var pointBuilder = new PointBuilder(_legalReferenceService);
-                    var point = pointBuilder.Build(nextParagraph, subsection, effectiveDate);
-                    subsection.Points.Add(point);
+                    var point = pointBuilder.Build(nextParagraph, paragraphDto, effectiveDate);
+                    paragraphDto.Points.Add(point);
                 }
                 // TODO: Obsługa poprawek (Z)
 
                 currentParagraph = nextParagraph;
             }
 
-            subsection.Context = _legalReferenceService.GetContext(subsection);
-            return subsection;
+            paragraphDto.Context = _legalReferenceService.GetContext(paragraphDto);
+            return paragraphDto;
         }
     }
 }

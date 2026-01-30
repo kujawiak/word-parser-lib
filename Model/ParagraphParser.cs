@@ -105,7 +105,7 @@ public class ParagraphParser
         }
     }
 
-    public ParagraphParseResult ParseParagraph(string text, string currentArticleContext = null)
+    public ParagraphParseResult ParseParagraph(string text, string? currentArticleContext = null)
     {
         _currentArticleContext = currentArticleContext;
         var result = new ParagraphParseResult
@@ -267,7 +267,7 @@ public class ParagraphParser
     }
 
     private void ParseSimpleAmendment(ParagraphParseResult result, string unitType, string unitPattern, string tagName,
-                                      string parentArticle = null, string parentSubsection = null, string parentPoint = null, string parentLetter = null)
+                                      string? parentArticle = null, string? parentSubsection = null, string? parentPoint = null, string? parentLetter = null)
     {
         // unitPattern to np. (ust\.\s*(?<id>[\w\d\.]+))
         // operacje: otrzymuje brzmienie, zmienia się, dodaje się, skreśla się, uchyla się
