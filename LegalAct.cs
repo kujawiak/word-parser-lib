@@ -18,7 +18,7 @@ namespace WordParserLibrary
         public CommentManager CommentManager { get; }
         public DocxGenerator DocxGenerator { get; set; }
         public XlsxGenerator XlsxGenerator { get; set; }
-        public Title Title { get; set; }
+        public object? Title { get; set; }
         public DateTime EffectiveDate { get; set; }
         public List<Article> Articles { get; set; } = new List<Article>();
 
@@ -37,12 +37,11 @@ namespace WordParserLibrary
             DocxGenerator = new DocxGenerator(this);
             XlsxGenerator = new XlsxGenerator(this);
 
-            Title = new Title(MainPart.Document.Descendants<Paragraph>()
-                                        .Where(p => p.ParagraphProperties != null
-                                                && p.StyleId("TYTUAKT") == true).FirstOrDefault() ?? throw new InvalidOperationException("Title paragraph not found"));                                        // Tytuł #1
-            // Title.Parts.Add(new Part());                                // Dział #1
-            // Title.Parts[0].Chapters.Add(new Chapter());                 // Rozdział #1
-            // Title.Parts[0].Chapters[0].Sections.Add(new Section());     // Oddział #1
+            // TODO: Restore Title initialization when Title class is refactored
+            // Title = new Title(MainPart.Document.Descendants<Paragraph>()
+            //                             .Where(p => p.ParagraphProperties != null
+            //                                     && p.StyleId("TYTUAKT") == true).FirstOrDefault() ?? throw new InvalidOperationException("Title paragraph not found"));
+            Title = null;
 
             var dateParagraph = MainPart.Document.Descendants<Paragraph>()
                                         .Where(p => p.ParagraphProperties != null && p.StyleId("DATAAKTU") == true)

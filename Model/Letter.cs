@@ -13,7 +13,6 @@ namespace WordParserLibrary.Model
 
         public Letter(Paragraph paragraph, Point parent) : base(paragraph, parent)
         {
-            EntityType = "LIT";
             EffectiveDate = parent.EffectiveDate;
             ContentParser letter = new ContentParser(this);
             letter.ParseOrdinal();

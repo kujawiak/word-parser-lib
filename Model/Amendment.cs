@@ -11,7 +11,6 @@ namespace WordParserLibrary.Model
         public string StyleValue { get; set; } = string.Empty;
         public Amendment(Paragraph paragraph, BaseEntity parent) : base(paragraph, parent)
         {
-            EntityType = "ZMIANA";
             Article = parent.Article ?? (parent as Article);
             Subsection = parent.Subsection ?? (parent as Subsection);
             Point = parent.Point ?? (parent as Point);

@@ -14,7 +14,6 @@ namespace WordParserLibrary.Model
 
         public Subsection(Paragraph paragraph, Article article) : base(paragraph, article)
         {
-            EntityType = "UST";
             EffectiveDate = article.EffectiveDate;
             ContentParser subsection = new ContentParser(this);
             subsection.ParseSubsection();

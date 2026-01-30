@@ -1,23 +1,28 @@
 using System.Text.RegularExpressions;
+using WordParserLibrary.Services;
 
 namespace WordParserLibrary.Model
 {
     public class ContentParser
     {
         private BaseEntity entity = null!;
-        public EntityNumber Number { get; private set; }
+        public WordParserLibrary.Model.Schemas.EntityNumberDto Number { get; private set; } = new();
         public string Content { get; private set; } = string.Empty;
 
         public bool ParserError { get; private set; } = false;
         public string ErrorMessage { get; private set; } = string.Empty;
         public bool HasAmendmentOperation { get; internal set; } = false;
 
+        private static readonly EntityNumberService _entityNumberService = new();
+
         public ContentParser(BaseEntity entity)
         {
             this.entity = entity;
             HasAmendmentOperation = entity.ContentText.Contains("uchyla się");
-            Number = new EntityNumber(entity.Paragraph);
-            entity.Number = Number; // Ensure the entity's number is set
+            // Logika parsowania numeru została przeniesiona do EntityNumberService
+            Number = _entityNumberService.Parse(entity.ContentText) ?? new WordParserLibrary.Model.Schemas.EntityNumberDto();
+            // Ensure the entity's number is set
+            entity.Number = Number;
         }
         
         public ContentParser ParseSubsection()

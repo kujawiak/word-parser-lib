@@ -3,7 +3,7 @@ namespace WordParserLibrary.Model.Schemas
     /// <summary>
     /// Model opisujący odniesienie do aktu prawnego (artykuł, ustęp, punkt, litera, tiret).
     /// </summary>
-    public class LegalReferenceDto
+    public class  LegalReferenceDto
     {
         public string? Article { get; set; }
         public string? Subsection { get; set; }

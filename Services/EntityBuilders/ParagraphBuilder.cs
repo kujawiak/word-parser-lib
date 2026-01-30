@@ -28,7 +28,7 @@ namespace WordParserLibrary.Services.EntityBuilders
             var paragraphDto = new ParagraphDto
             {
                 Guid = Guid.NewGuid(),
-                EntityType = "UST",
+                UnitType = UnitType.Paragraph,
                 EffectiveDate = effectiveDate,
                 Article = parentArticle,
                 Parent = parentArticle,

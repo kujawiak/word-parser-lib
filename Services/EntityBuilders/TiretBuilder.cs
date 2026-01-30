@@ -25,19 +25,20 @@ namespace WordParserLibrary.Services.EntityBuilders
         /// </summary>
         public TiretDto Build(Paragraph paragraph, LetterDto parentLetter, DateTime effectiveDate, int ordinal = 1)
         {
+            var entityNumberService = new EntityNumberService();
+            var parsedNumber = entityNumberService.Parse(ordinal.ToString());
+
             var tiret = new TiretDto
             {
                 Guid = Guid.NewGuid(),
-                EntityType = "TIR",
+                UnitType = UnitType.Tiret,
                 EffectiveDate = effectiveDate,
                 Letter = parentLetter,
                 Point = parentLetter.Point,
                 Paragraph = parentLetter.Paragraph,
                 Article = parentLetter.Article,
                 Parent = parentLetter,
-                Number = ordinal,
-                // set DTO ordinal info
-                NumberDto = new EntityNumberService().Parse(ordinal.ToString()),
+                Number = parsedNumber,
                 LegalReference = new LegalReferenceDto
                 {
                     PublicationNumber = parentLetter.LegalReference?.PublicationNumber,
@@ -56,7 +57,7 @@ namespace WordParserLibrary.Services.EntityBuilders
             // TODO: Obsługa błędów parsowania
 
             Log.Information("Tiret: {Number} - {Content}", 
-                tiret.Number, 
+                tiret.Number?.Value, 
                 tiret.ContentText.Substring(0, Math.Min(tiret.ContentText.Length, 100)));
 
             var currentParagraph = paragraph;

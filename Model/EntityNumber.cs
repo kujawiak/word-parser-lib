@@ -6,11 +6,12 @@ using System.Text;
 
 namespace WordParserLibrary.Model
 {
+    [System.Obsolete("Use EntityNumberDto in WordParserLibrary.Model.Schemas for DTO-level numbering and parsing.")]
     public class EntityNumber
     {
         public int NumericPart { get; set; }
-        public string LexicalPart { get; set; }
-        public string Superscript { get; set; }
+        public string LexicalPart { get; set; } = string.Empty;
+        public string Superscript { get; set; } = string.Empty;
         public EntityNumber(Paragraph paragraph)
         {
             //TODO Parse paragraph to extract numeric and lexical parts

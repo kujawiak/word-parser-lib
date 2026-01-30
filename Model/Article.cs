@@ -49,7 +49,6 @@ namespace WordParserLibrary.Model
         {
             ParentLegalAct = legalAct;
             EffectiveDate = legalAct.EffectiveDate;
-            EntityType = "ART";
             ParagraphParser paragraphParser = new ParagraphParser();
             paragraphParser.ParseParagraph(this);
             Log.Information("Article: {Number} - {Content}", Number, ContentText.Substring(0, Math.Min(ContentText.Length, 50)));

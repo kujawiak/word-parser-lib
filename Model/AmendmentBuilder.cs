@@ -63,7 +63,7 @@ namespace WordParserLibrary.Model
                         break;
                     var first = allAmendmets.First();
                     var coZmieniane = operation.AmendmentObjectType.ToStyleValueString();
-                    var czymZmieniane = first.Parent.EntityType;
+                    var czymZmieniane = first.Parent.Number?.Value ?? "unknown";
                     if (czymZmieniane == "ART" || czymZmieniane == "UST" || czymZmieniane == "PKT")
                     {
                         czymZmieniane = "";

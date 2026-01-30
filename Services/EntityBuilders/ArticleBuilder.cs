@@ -28,7 +28,7 @@ namespace WordParserLibrary.Services.EntityBuilders
             var article = new ArticleDto
             {
                 Guid = Guid.NewGuid(),
-                EntityType = "ART",
+                UnitType = UnitType.Article,
                 EffectiveDate = effectiveDate,
                 LegalReference = new LegalReferenceDto(),
                 Paragraphs = new List<ParagraphDto>(),
@@ -39,7 +39,6 @@ namespace WordParserLibrary.Services.EntityBuilders
             var entityNumberService = new EntityNumberService();
             var parsedNumber = paragraph.InnerText.Sanitize().Trim();
             article.Number = entityNumberService.Parse(parsedNumber);
-            article.NumberDto = article.Number;
             article.ContentText = paragraph.InnerText.Sanitize().Trim();
 
             Log.Information("Article: {Number} - {Content}", 

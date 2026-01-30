@@ -6,7 +6,6 @@ namespace WordParserLibrary.Model.Schemas
     /// </summary>
     public class TiretDto : BaseEntityDto
     {
-        public new int Number { get; set; } = 1;
         public List<AmendmentDto> Amendments { get; set; } = new();
 
         public TiretDto()

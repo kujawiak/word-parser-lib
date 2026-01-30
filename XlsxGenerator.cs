@@ -133,7 +133,7 @@ namespace WordParserLibrary
             var row = new Row { RowIndex = rowIndex };
             row.Append(
                 SpreadsheetHelper.CreateTextCell("A", rowIndex, entity.ContentText),
-                SpreadsheetHelper.CreateTextCell("B", rowIndex, entity.EntityType),
+                SpreadsheetHelper.CreateTextCell("B", rowIndex, entity.Number?.Value ?? string.Empty),
                 SpreadsheetHelper.CreateTextCell("C", rowIndex, entity.Id),
                 SpreadsheetHelper.CreateTextCell("D", rowIndex, entity.Article?.Journals.FirstOrDefault()?.ToString() ?? string.Empty),
                 SpreadsheetHelper.CreateTextCell("E", rowIndex, entity.EffectiveDate.ToString("yyyy-MM-dd")),

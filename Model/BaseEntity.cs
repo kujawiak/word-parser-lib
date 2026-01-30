@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System.Text.RegularExpressions;
 using System.Text;
+using WordParserLibrary.Model.Schemas;
+using WordParserLibrary.Services;
 
 namespace WordParserLibrary.Model
 {
@@ -15,7 +17,7 @@ namespace WordParserLibrary.Model
         public Letter? Letter { get; set; }
         public Tiret? Tiret { get; set; }
         public Guid Guid { get; set; } = Guid.NewGuid();
-        public EntityNumber Number { get; set; }
+        public EntityNumberDto Number { get; set; } = new();
         public string ContentText { get; set; }
         public string Context { get; set; }
         public Paragraph Paragraph { get; set; }
@@ -23,7 +25,6 @@ namespace WordParserLibrary.Model
         public LegalReference LegalReference { get; set; } = new LegalReference(); // TODO: remove when AI method of amendment identification is introduced
         public bool? Error { get; set; }
         public string? ErrorMessage { get; set; }
-        public string EntityType { get; set; } = string.Empty;
         public DateTime EffectiveDate { get; set; }
 
         public BaseEntity(Paragraph paragraph, BaseEntity? parent)
@@ -76,7 +77,8 @@ namespace WordParserLibrary.Model
             Paragraph = paragraph;
             ContentText = paragraph.InnerText.Sanitize().Trim();
             Context = GetContext() ?? ContentText;
-            Number = new EntityNumber(paragraph);
+            var entityNumberService = new EntityNumberService();
+            Number = entityNumberService.Parse(ContentText);
             AmendmentOperations = new List<AmendmentOperation>();
             if (Article != null && Article.IsAmending && Paragraph.StyleId("Z") == false)
             {

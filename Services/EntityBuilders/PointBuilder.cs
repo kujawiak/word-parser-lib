@@ -28,7 +28,7 @@ namespace WordParserLibrary.Services.EntityBuilders
             var point = new PointDto
             {
                 Guid = Guid.NewGuid(),
-                EntityType = "PKT",
+                UnitType = UnitType.Point,
                 EffectiveDate = effectiveDate,
                 Paragraph = parentParagraph,
                 Article = parentParagraph.Article,
@@ -48,7 +48,6 @@ namespace WordParserLibrary.Services.EntityBuilders
             point.ContentText = paragraph.InnerText.Sanitize().Trim();
             var entityNumberService = new EntityNumberService();
             point.Number = entityNumberService.Parse(point.ContentText);
-            point.NumberDto = point.Number;
 
             // TODO: Obsługa błędów parsowania
 

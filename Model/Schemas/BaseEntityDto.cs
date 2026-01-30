@@ -28,14 +28,15 @@ namespace WordParserLibrary.Model.Schemas
         public Guid Guid { get; set; } = Guid.NewGuid();
 
         /// <summary>
-        /// Numer encji (np. 10 dla artykułu, 2 dla ustępu).
+        /// Typ jednostki semantycznej (np. Article/Paragraph/Point/Letter/Tiret/...)
         /// </summary>
-        public EntityNumberDto? Number { get; set; }
+        public UnitType UnitType { get; set; } = UnitType.Unknown;
 
         /// <summary>
-        /// Numer encji w formie rozbitej na komponenty (część liczbowa, tekstowa, indeks górny).
+        /// Numer encji (np. 10 dla artykułu, 2 dla ustępu, f dla litery).
+        /// Zawiera rozbicie na komponenty: część liczbowa, tekstowa i indeks górny.
         /// </summary>
-        public EntityNumberDto? NumberDto { get; set; }
+        public EntityNumberDto? Number { get; set; }
 
         public string ContentText { get; set; } = string.Empty;
         public string Context { get; set; } = string.Empty;
@@ -43,12 +44,6 @@ namespace WordParserLibrary.Model.Schemas
         public LegalReferenceDto? LegalReference { get; set; }
         public bool? Error { get; set; }
         public string? ErrorMessage { get; set; }
-        public string EntityType { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Typ jednostki semantycznej (np. Article/Paragraph/Point/Letter/Tiret/...)
-        /// </summary>
-        public UnitType UnitType { get; set; } = UnitType.Unknown;
 
         /// <summary>
         /// Etykieta do wyświetlenia (np. "art.", "ust.", "§")
@@ -85,7 +80,7 @@ namespace WordParserLibrary.Model.Schemas
 
             if (this is TiretDto t)
             {
-                return $"{EIdPrefix}_{t.Number}";
+                return string.IsNullOrEmpty(t.Number?.Value) ? EIdPrefix : $"{EIdPrefix}_{t.Number.Value}";
             }
 
             if (!string.IsNullOrEmpty(Number?.Value))

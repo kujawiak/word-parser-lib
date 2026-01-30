@@ -7,11 +7,10 @@ using Serilog;
 namespace WordParserLibrary.Model
 {
         public class Tiret : BaseEntity, IAmendable, IXmlConvertible {
-        public int Number { get; set; } = 1;
+        public new int Number { get; set; } = 1;
         public List<Amendment> Amendments { get; set; } = new List<Amendment>();
         public Tiret(Paragraph paragraph, Letter parent, int ordinal = 1) : base(paragraph, parent)
         {
-            EntityType = "TIR";
             EffectiveDate = parent.EffectiveDate;
             ContentParser tiret = new ContentParser(this);
             ContentText = tiret.Content;

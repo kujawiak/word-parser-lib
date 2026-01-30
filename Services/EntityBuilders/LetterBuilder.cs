@@ -28,7 +28,7 @@ namespace WordParserLibrary.Services.EntityBuilders
             var letter = new LetterDto
             {
                 Guid = Guid.NewGuid(),
-                EntityType = "LIT",
+                UnitType = UnitType.Letter,
                 EffectiveDate = effectiveDate,
                 Point = parentPoint,
                 Paragraph = parentPoint.Paragraph,

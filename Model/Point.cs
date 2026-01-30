@@ -9,7 +9,6 @@ namespace WordParserLibrary.Model
         public List<Amendment> Amendments { get; set; } = new List<Amendment>();
         public Point(Paragraph paragraph, Subsection parent) : base(paragraph, parent)
         {
-            EntityType = "PKT";
             EffectiveDate = parent.EffectiveDate;
             ContentParser point = new ContentParser(this);
             point.ParseOrdinal();
