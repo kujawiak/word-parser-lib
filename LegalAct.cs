@@ -1,9 +1,10 @@
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Wordprocessing;
+using Word = DocumentFormat.OpenXml.Wordprocessing;
 using System.IO.Packaging;
 using System.Xml;
 using Serilog;
+using Dto = ModelDto.EditorialUnits;
 
 namespace WordParserLibrary
 {
@@ -19,7 +20,8 @@ namespace WordParserLibrary
         public XlsxGenerator XlsxGenerator { get; set; }
         public object? Title { get; set; }
         public DateTime EffectiveDate { get; set; }
-        //public List<Article> Articles { get; set; } = new List<Article>();
+
+        public List<Dto.Article> Articles { get; set; } = new List<Dto.Article>();
 
         public LegalAct(WordprocessingDocument wordDocument)
         {
@@ -42,14 +44,14 @@ namespace WordParserLibrary
             //                                     && p.StyleId("TYTUAKT") == true).FirstOrDefault() ?? throw new InvalidOperationException("Title paragraph not found"));
             Title = null;
 
-            var dateParagraph = MainPart.Document.Descendants<Paragraph>()
+            var dateParagraph = MainPart.Document.Descendants<Word.Paragraph>()
                                         .Where(p => p.ParagraphProperties != null && p.StyleId("DATAAKTU") == true)
                                         .FirstOrDefault() ?? throw new InvalidOperationException("Effective date paragraph not found");
 
             EffectiveDate = dateParagraph.InnerText.ExtractDate();
             Log.Information("[LegalAct.Constructor]\tData wejścia w życie: {EffectiveDate}", EffectiveDate);
 
-            foreach (var paragraph in MainPart.Document.Descendants<Paragraph>()
+            foreach (var paragraph in MainPart.Document.Descendants<Word.Paragraph>()
                                             .Where(p => p.InnerText.StartsWith("Art.") || p.InnerText.StartsWith("§"))
                                             .ToList())
             {
