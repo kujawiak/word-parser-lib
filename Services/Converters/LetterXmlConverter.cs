@@ -1,5 +1,5 @@
 using System.Xml.Linq;
-using WordParserLibrary.Model.Schemas;
+using ModelDto.EditorialUnits;
 
 namespace WordParserLibrary.Services.Converters
 {
@@ -8,27 +8,27 @@ namespace WordParserLibrary.Services.Converters
     /// </summary>
     public class LetterXmlConverter
     {
-        public XElement ToXml(LetterDto letter, bool generateGuids = false)
-        {
-            var newElement = new XElement(XmlConstants.Letter,
-                new XAttribute("id", letter.Id));
-            if (generateGuids) newElement.Add(new XAttribute("guid", letter.Guid));
-            newElement.AddFirst(new XElement(XmlConstants.Number, letter.Number?.Value ?? string.Empty));
-            newElement.Add(new XElement("text", letter.ContentText));
+        // public XElement ToXml(LetterDto letter, bool generateGuids = false)
+        // {
+        //     var newElement = new XElement(XmlConstants.Letter,
+        //         new XAttribute("id", letter.Id));
+        //     if (generateGuids) newElement.Add(new XAttribute("guid", letter.Guid));
+        //     newElement.AddFirst(new XElement(XmlConstants.Number, letter.Number?.Value ?? string.Empty));
+        //     newElement.Add(new XElement("text", letter.ContentText));
 
-            foreach (var tiret in letter.Tirets)
-            {
-                var tiretConverter = new TiretXmlConverter();
-                newElement.Add(tiretConverter.ToXml(tiret, generateGuids));
-            }
+        //     foreach (var tiret in letter.Tirets)
+        //     {
+        //         var tiretConverter = new TiretXmlConverter();
+        //         newElement.Add(tiretConverter.ToXml(tiret, generateGuids));
+        //     }
 
-            // TODO: Dodać Amendment conversion
-            foreach (var amendment in letter.Amendments)
-            {
-                // newElement.Add(amendment.ToXML(generateGuids));
-            }
+        //     // TODO: Dodać Amendment conversion
+        //     foreach (var amendment in letter.Amendments)
+        //     {
+        //         // newElement.Add(amendment.ToXML(generateGuids));
+        //     }
 
-            return newElement;
-        }
+        //     return newElement;
+        // }
     }
 }

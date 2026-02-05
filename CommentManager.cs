@@ -105,48 +105,48 @@ namespace WordParserLibrary
 
         public void CommentErrors(LegalAct legalAct)
         {
-            foreach (var article in legalAct.Articles)
+            // foreach (var article in legalAct.Articles)
             {
-                if (article.Error == true && article.ErrorMessage != null)
-                {
-                    var commentText = $"Błąd: {article.ErrorMessage}";
-                    AddComment(article.Paragraph, commentText);
-                }
-                foreach (var subsection in article.Subsections)
-                {
-                    if (subsection.Error == true && subsection.ErrorMessage != null)
-                    {
-                        var commentText = $"Błąd: {subsection.ErrorMessage}";
-                        AddComment(subsection.Paragraph, commentText);
-                    }
-                    foreach (var point in subsection.Points)
-                    {
-                        if (point.Error == true && point.ErrorMessage != null)
-                        {
-                            var commentText = $"Błąd: {point.ErrorMessage}";
-                            AddComment(point.Paragraph, commentText);
-                        }
-                        foreach (var letter in point.Letters)
-                        {
-                            if (letter.Error == true && letter.ErrorMessage != null)
-                            {
-                                var commentText = $"Błąd: {letter.ErrorMessage}";
-                                AddComment(letter.Paragraph, commentText);
-                            }
-                            if (letter.Tirets != null && letter.Tirets.Any())
-                            {
-                                foreach (var tiret in letter.Tirets)
-                                {
-                                    if (tiret.Error == true && tiret.ErrorMessage != null)
-                                    {
-                                        var commentText = $"Błąd: {tiret.ErrorMessage}";
-                                        AddComment(tiret.Paragraph, commentText);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                // if (article.Error == true && article.ErrorMessage != null)
+                // {
+                //     var commentText = $"Błąd: {article.ErrorMessage}";
+                //     AddComment(article.Paragraph, commentText);
+                // }
+                // foreach (var subsection in article.Subsections)
+                // {
+                //     if (subsection.Error == true && subsection.ErrorMessage != null)
+                //     {
+                //         var commentText = $"Błąd: {subsection.ErrorMessage}";
+                //         AddComment(subsection.Paragraph, commentText);
+                //     }
+                //     foreach (var point in subsection.Points)
+                //     {
+                //         if (point.Error == true && point.ErrorMessage != null)
+                //         {
+                //             var commentText = $"Błąd: {point.ErrorMessage}";
+                //             AddComment(point.Paragraph, commentText);
+                //         }
+                //         foreach (var letter in point.Letters)
+                //         {
+                //             if (letter.Error == true && letter.ErrorMessage != null)
+                //             {
+                //                 var commentText = $"Błąd: {letter.ErrorMessage}";
+                //                 AddComment(letter.Paragraph, commentText);
+                //             }
+                //             if (letter.Tirets != null && letter.Tirets.Any())
+                //             {
+                //                 foreach (var tiret in letter.Tirets)
+                //                 {
+                //                     if (tiret.Error == true && tiret.ErrorMessage != null)
+                //                     {
+                //                         var commentText = $"Błąd: {tiret.ErrorMessage}";
+                //                         AddComment(tiret.Paragraph, commentText);
+                //                     }
+                //                 }
+                //             }
+                //         }
+                //     }
+                //}
             }
         }
 

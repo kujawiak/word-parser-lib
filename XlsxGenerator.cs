@@ -1,7 +1,6 @@
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
-using WordParserLibrary.Model;
 using WordParserLibrary.Helpers;
 
 namespace WordParserLibrary
@@ -53,63 +52,63 @@ namespace WordParserLibrary
 
                 // Add articles and their children
                 uint currentRow = 2;
-                foreach (var article in legalAct.Articles)
-                {
-                    sheetData.Append(ToXlsRow(article, currentRow));
-                    currentRow++;
-                    foreach (var subsection in article.Subsections)
-                    {
-                        sheetData.Append(ToXlsRow(subsection, currentRow));
-                        currentRow++;
-                        if (subsection.Amendments.Any())
-                        {
-                            foreach (var amendment in subsection.Amendments)
-                            {
-                                sheetData.Append(ToXlsRow(amendment, currentRow));
-                                currentRow++;
-                            }
-                        }
-                        foreach (var point in subsection.Points)
-                        {
-                            sheetData.Append(ToXlsRow(point, currentRow));
-                            currentRow++;
-                            if (point.Amendments.Any())
-                            {
-                                foreach (var amendment in point.Amendments)
-                                {
-                                    sheetData.Append(ToXlsRow(amendment, currentRow));
-                                    currentRow++;
-                                }
-                            }
-                            foreach (var letter in point.Letters)
-                            {
-                                sheetData.Append(ToXlsRow(letter, currentRow));
-                                currentRow++;
-                                if (letter.Amendments.Any())
-                                {
-                                    foreach (var amendment in letter.Amendments)
-                                    {
-                                        sheetData.Append(ToXlsRow(amendment, currentRow));
-                                        currentRow++;
-                                    }
-                                }
-                                foreach (var tiret in letter.Tirets)
-                                {
-                                    sheetData.Append(ToXlsRow(tiret, currentRow));
-                                    currentRow++;
-                                    if (tiret.Amendments.Any())
-                                    {
-                                        foreach (var amendment in tiret.Amendments)
-                                        {
-                                            sheetData.Append(ToXlsRow(amendment, currentRow));
-                                            currentRow++;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                // foreach (var article in legalAct.Articles)
+                // {
+                //     sheetData.Append(ToXlsRow(article, currentRow));
+                //     currentRow++;
+                //     foreach (var subsection in article.Subsections)
+                //     {
+                //         sheetData.Append(ToXlsRow(subsection, currentRow));
+                //         currentRow++;
+                //         if (subsection.Amendments.Any())
+                //         {
+                //             foreach (var amendment in subsection.Amendments)
+                //             {
+                //                 sheetData.Append(ToXlsRow(amendment, currentRow));
+                //                 currentRow++;
+                //             }
+                //         }
+                //         foreach (var point in subsection.Points)
+                //         {
+                //             sheetData.Append(ToXlsRow(point, currentRow));
+                //             currentRow++;
+                //             if (point.Amendments.Any())
+                //             {
+                //                 foreach (var amendment in point.Amendments)
+                //                 {
+                //                     sheetData.Append(ToXlsRow(amendment, currentRow));
+                //                     currentRow++;
+                //                 }
+                //             }
+                //             foreach (var letter in point.Letters)
+                //             {
+                //                 sheetData.Append(ToXlsRow(letter, currentRow));
+                //                 currentRow++;
+                //                 if (letter.Amendments.Any())
+                //                 {
+                //                     foreach (var amendment in letter.Amendments)
+                //                     {
+                //                         sheetData.Append(ToXlsRow(amendment, currentRow));
+                //                         currentRow++;
+                //                     }
+                //                 }
+                //                 foreach (var tiret in letter.Tirets)
+                //                 {
+                //                     sheetData.Append(ToXlsRow(tiret, currentRow));
+                //                     currentRow++;
+                //                     if (tiret.Amendments.Any())
+                //                     {
+                //                         foreach (var amendment in tiret.Amendments)
+                //                         {
+                //                             sheetData.Append(ToXlsRow(amendment, currentRow));
+                //                             currentRow++;
+                //                         }
+                //                     }
+                //                 }
+                //             }
+                //         }
+                //     }
+                // }
 
                 // Add Sheets to the Workbook
                 var sheets = spreadsheetDocument.WorkbookPart.Workbook.AppendChild(new Sheets());
@@ -128,18 +127,18 @@ namespace WordParserLibrary
             return stream;
         }
 
-        public Row ToXlsRow(BaseEntity entity, uint rowIndex = 0)
-        {
-            var row = new Row { RowIndex = rowIndex };
-            row.Append(
-                SpreadsheetHelper.CreateTextCell("A", rowIndex, entity.ContentText),
-                SpreadsheetHelper.CreateTextCell("B", rowIndex, entity.Number?.Value ?? string.Empty),
-                SpreadsheetHelper.CreateTextCell("C", rowIndex, entity.Id),
-                SpreadsheetHelper.CreateTextCell("D", rowIndex, entity.Article?.Journals.FirstOrDefault()?.ToString() ?? string.Empty),
-                SpreadsheetHelper.CreateTextCell("E", rowIndex, entity.EffectiveDate.ToString("yyyy-MM-dd")),
-                SpreadsheetHelper.CreateTextCell("F", rowIndex, entity.AmendmentOperations?.FirstOrDefault()?.ToString() ?? string.Empty)
-            );
-            return row;
-        }
+        // public Row ToXlsRow(BaseEntity entity, uint rowIndex = 0)
+        // {
+        //     var row = new Row { RowIndex = rowIndex };
+        //     row.Append(
+        //         SpreadsheetHelper.CreateTextCell("A", rowIndex, entity.ContentText),
+        //         SpreadsheetHelper.CreateTextCell("B", rowIndex, entity.Number?.Value ?? string.Empty),
+        //         SpreadsheetHelper.CreateTextCell("C", rowIndex, entity.Id),
+        //         SpreadsheetHelper.CreateTextCell("D", rowIndex, entity.Article?.Journals.FirstOrDefault()?.ToString() ?? string.Empty),
+        //         SpreadsheetHelper.CreateTextCell("E", rowIndex, entity.EffectiveDate.ToString("yyyy-MM-dd")),
+        //         SpreadsheetHelper.CreateTextCell("F", rowIndex, entity.AmendmentOperations?.FirstOrDefault()?.ToString() ?? string.Empty)
+        //     );
+        //     return row;
+        // }
     }
 }

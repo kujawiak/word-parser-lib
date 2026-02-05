@@ -3,7 +3,6 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System.IO.Packaging;
 using System.Xml;
-using WordParserLibrary.Model;
 using Serilog;
 
 namespace WordParserLibrary
@@ -20,7 +19,7 @@ namespace WordParserLibrary
         public XlsxGenerator XlsxGenerator { get; set; }
         public object? Title { get; set; }
         public DateTime EffectiveDate { get; set; }
-        public List<Article> Articles { get; set; } = new List<Article>();
+        //public List<Article> Articles { get; set; } = new List<Article>();
 
         public LegalAct(WordprocessingDocument wordDocument)
         {
@@ -69,11 +68,11 @@ namespace WordParserLibrary
 
                 if (paragraph.StyleId("ART") == true)
                 {
-                    Articles.Add(new Article(paragraph, this));
+                    // Articles.Add(new Article(paragraph, this));
                 }
             }
 
-            SaveAmendmentList();
+            // SaveAmendmentList();
         }
 
         public MemoryStream GetStream(List<string> stringList)
@@ -111,7 +110,7 @@ namespace WordParserLibrary
                 }
                 if (stringList.Contains("AMENDMENTS"))
                 {
-                    SaveAmendmentList();
+                    // SaveAmendmentList();
                 }
                 if (stringList.Contains("XML"))
                 {
@@ -137,27 +136,27 @@ namespace WordParserLibrary
             }
         }
 
-        public void SaveAmendmentList()
-        {
-            var allAmendments = new List<string>();
-            foreach (Article article in Articles)
-            {
-                if (article.AllAmendments != null && article.AllAmendments.Any())
-                {
-                    allAmendments.AddRange(article.AllAmendments);
-                }
-            }
-            if (allAmendments.Any())
-            {
-                allAmendments = allAmendments.Distinct().ToList();
-                var amendmentsFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "nowele.txt");
-                File.WriteAllLines(amendmentsFilePath, allAmendments);
-                Console.WriteLine($"Amendments list saved at: {amendmentsFilePath}");
-            }
-            else
-            {
-                Console.WriteLine("No amendments found to save.");
-            }
-        }
+        // public void SaveAmendmentList()
+        // {
+        //     var allAmendments = new List<string>();
+        //     foreach (Article article in Articles)
+        //     {
+        //         if (article.AllAmendments != null && article.AllAmendments.Any())
+        //         {
+        //             allAmendments.AddRange(article.AllAmendments);
+        //         }
+        //     }
+        //     if (allAmendments.Any())
+        //     {
+        //         allAmendments = allAmendments.Distinct().ToList();
+        //         var amendmentsFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "nowele.txt");
+        //         File.WriteAllLines(amendmentsFilePath, allAmendments);
+        //         Console.WriteLine($"Amendments list saved at: {amendmentsFilePath}");
+        //     }
+        //     else
+        //     {
+        //         Console.WriteLine("No amendments found to save.");
+        //     }
+        // }
     }    
 }   

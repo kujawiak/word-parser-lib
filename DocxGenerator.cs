@@ -4,7 +4,6 @@ using DocumentFormat.OpenXml.Validation;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Serilog;
 using System.IO;
-using WordParserLibrary.Model;
 
 namespace WordParserLibrary
 {
@@ -97,10 +96,10 @@ namespace WordParserLibrary
                 body.RemoveAllChildren();
 
                 // Dodaj artykuły do dokumentu
-                foreach (var article in legalAct.Articles)
-                {
-                    AddArticle(article, body, styles);
-                }
+                // foreach (var article in legalAct.Articles)
+                // {
+                //     AddArticle(article, body, styles);
+                // }
                 document.Save();
             }
             
@@ -128,119 +127,118 @@ namespace WordParserLibrary
             }
         }
         
-        private void AddArticle(Article article, Body body, List<StringValue> styles)
-        {
-            // var style = styles.FirstOrDefault(s => s.Value != null && s.Value.StartsWith("ART"));
-            Paragraph p = article.ToParagraph();
-            body.AppendChild(p);
-            if (article.Subsections.First().Amendments.Any())
-            {
-                AddAmendments(article.Subsections.First().Amendments, body, styles);
-            }
-            if (article.Subsections.First().Points.Any())
-            {
-                foreach (var point in article.Subsections.First().Points)
-                {
-                    AddPoint(point, body, styles);
-                }
-            }
-            if (article.Subsections.Count > 1)
-            {
-                foreach (var subsection in article.Subsections)
-                {
-                    if (article.Subsections.IndexOf(subsection) != 0)
-                    {
-                        AddSubsection(subsection, body, styles);
-                    }
-                }
-            }
-        }
+        // private void AddArticle(Article article, Body body, List<StringValue> styles)
+        // {
+        //     // var style = styles.FirstOrDefault(s => s.Value != null && s.Value.StartsWith("ART"));
+        //     Paragraph p = article.ToParagraph();
+        //     body.AppendChild(p);
+        //     if (article.Subsections.First().Amendments.Any())
+        //     {
+        //         AddAmendments(article.Subsections.First().Amendments, body, styles);
+        //     }
+        //     if (article.Subsections.First().Points.Any())
+        //     {
+        //         foreach (var point in article.Subsections.First().Points)
+        //         {
+        //             AddPoint(point, body, styles);
+        //         }
+        //     }
+        //     if (article.Subsections.Count > 1)
+        //     {
+        //         foreach (var subsection in article.Subsections)
+        //         {
+        //             if (article.Subsections.IndexOf(subsection) != 0)
+        //             {
+        //                 AddSubsection(subsection, body, styles);
+        //             }
+        //         }
+        //     }
+        // }
 
-        private void AddAmendments(List<Amendment> amendments, Body body, List<StringValue> styles)
-        {
-            foreach (var amendment in amendments)
-            {
-                var p = new Paragraph();
+        // private void AddAmendments(List<Amendment> amendments, Body body, List<StringValue> styles)
+        // {
+        //     foreach (var amendment in amendments)
+        //     {
+        //         var p = new Paragraph();
                 
-                var style = styles.FirstOrDefault(s => s.Value != null && s.Value.StartsWith(amendment.StyleValue));
-                Log.Debug("Znaleziono styl: {Style}", style);
-                if (style == null)
-                {
-                    Log.Warning("Nie znaleziono stylu dla poprawki: {Amendment}", amendment);
-                    continue;
-                }
-                p.ParagraphProperties = new ParagraphProperties(new ParagraphStyleId { Val = style });
-                // p.ParagraphProperties.Shading = new Shading
-                // {
-                //     Val = ShadingPatternValues.Clear,
-                //     Color = "auto",
-                //     Fill = "D9EAF7" // Light blue background color
-                // };
-                p.Append(new Run(new Text(amendment.ContentText)));
-                if (amendment.Operation != null)
-                {
-                    commentManager.AddComment(p, amendment.Operation.ToString());
-                }
-                else
-                {
-                    commentManager.AddComment(p, "BŁAD: Nie znaleziono operacji; " + amendment.LegalReference.ToString());
-                }
+        //         var style = styles.FirstOrDefault(s => s.Value != null && s.Value.StartsWith(amendment.StyleValue));
+        //         Log.Debug("Znaleziono styl: {Style}", style);
+        //         if (style == null)
+        //         {
+        //             Log.Warning("Nie znaleziono stylu dla poprawki: {Amendment}", amendment);
+        //             continue;
+        //         }
+        //         p.ParagraphProperties = new ParagraphProperties(new ParagraphStyleId { Val = style });
+        //         // p.ParagraphProperties.Shading = new Shading
+        //         // {
+        //         //     Val = ShadingPatternValues.Clear,
+        //         //     Color = "auto",
+        //         //     Fill = "D9EAF7" // Light blue background color
+        //         // };
+        //         p.Append(new Run(new Text(amendment.ContentText)));
+        //         if (amendment.Operation != null)
+        //         {
+        //             commentManager.AddComment(p, amendment.Operation.ToString());
+        //         }
+        //         else
+        //         {
+        //             commentManager.AddComment(p, "BŁAD: Nie znaleziono operacji; " + amendment.LegalReference.ToString());
+        //         }
                 
-                body.AppendChild(p);
-            }
-            
-        }
+        //         body.AppendChild(p);
+        //     }
+        // }
 
-        private void AddSubsection(Subsection subsection, Body body, List<StringValue> styles)
-        {
-            // var style = styles.FirstOrDefault(s => s.Value != null && s.Value.StartsWith("UST"));
-            var p = subsection.ToParagraph();
-            body.AppendChild(p);
-            if (subsection.Amendments.Any())
-            {
-                AddAmendments(subsection.Amendments, body, styles);
-            }
-            foreach (var point in subsection.Points)
-            {
-                AddPoint(point, body, styles);
-            }
-        }
+        // private void AddSubsection(Subsection subsection, Body body, List<StringValue> styles)
+        // {
+        //     // var style = styles.FirstOrDefault(s => s.Value != null && s.Value.StartsWith("UST"));
+        //     var p = subsection.ToParagraph();
+        //     body.AppendChild(p);
+        //     if (subsection.Amendments.Any())
+        //     {
+        //         AddAmendments(subsection.Amendments, body, styles);
+        //     }
+        //     foreach (var point in subsection.Points)
+        //     {
+        //         AddPoint(point, body, styles);
+        //     }
+        // }
         
-        private void AddPoint(Point point, Body body, List<StringValue> styles)
-        {
-            // var style = styles.FirstOrDefault(s => s.Value != null && s.Value.StartsWith("PKT"));
-            var p = point.ToParagraph();
-            body.AppendChild(p);
-            if (point.Amendments.Any())
-            {
-                AddAmendments(point.Amendments, body, styles);
-            }
-            foreach (var letter in point.Letters)
-            {
-                AddLetter(letter, body, styles);
-            }
-        }
+        // private void AddPoint(Point point, Body body, List<StringValue> styles)
+        // {
+        //     // var style = styles.FirstOrDefault(s => s.Value != null && s.Value.StartsWith("PKT"));
+        //     var p = point.ToParagraph();
+        //     body.AppendChild(p);
+        //     if (point.Amendments.Any())
+        //     {
+        //         AddAmendments(point.Amendments, body, styles);
+        //     }
+        //     foreach (var letter in point.Letters)
+        //     {
+        //         AddLetter(letter, body, styles);
+        //     }
+        // }
 
-        private void AddLetter(Letter letter, Body body, List<StringValue> styles)
-        {
-            // var style = styles.FirstOrDefault(s => s.Value != null && s.Value.StartsWith("LIT"));
-            var p = letter.ToParagraph();
-            body.AppendChild(p);
-            if (letter.Amendments.Any())
-            {
-                AddAmendments(letter.Amendments, body, styles);
-            }
-            foreach (var tiret in letter.Tirets)
-            {
-                AddTiret(tiret, body);
-            }
-        }
+        // private void AddLetter(Letter letter, Body body, List<StringValue> styles)
+        // {
+        //     // var style = styles.FirstOrDefault(s => s.Value != null && s.Value.StartsWith("LIT"));
+        //     var p = letter.ToParagraph();
+        //     body.AppendChild(p);
+        //     if (letter.Amendments.Any())
+        //     {
+        //         AddAmendments(letter.Amendments, body, styles);
+        //     }
+        //     foreach (var tiret in letter.Tirets)
+        //     {
+        //         AddTiret(tiret, body);
+        //     }
+        // }
 
-        private void AddTiret(Tiret tiret, Body body)
-        {
-            var tiretParagraph = new Paragraph(new Run(new Text(tiret.ContentText)));
-            // tiretParagraph.ParagraphProperties = new ParagraphProperties(new ParagraphStyleId { Val = "TiretStyle" });
-            body.AppendChild(tiretParagraph);
-        }
+        // private void AddTiret(Tiret tiret, Body body)
+        // {
+        //     var tiretParagraph = new Paragraph(new Run(new Text(tiret.ContentText)));
+        //     // tiretParagraph.ParagraphProperties = new ParagraphProperties(new ParagraphStyleId { Val = "TiretStyle" });
+        //     body.AppendChild(tiretParagraph);
+        // }
     }
 }

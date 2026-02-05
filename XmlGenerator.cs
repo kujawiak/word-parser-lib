@@ -2,7 +2,6 @@ using System.Security;
 using System.Xml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
-using WordParserLibrary.Model;
 
 namespace WordParserLibrary
 {
@@ -23,13 +22,13 @@ namespace WordParserLibrary
             var xmlDoc = new XmlDocument();
             var rootElement = xmlDoc.CreateElement(XmlConstants.Root);
 
-            foreach (var article in _legalAct.Articles)
-            {
-                // Konwertuj XElement na XmlElement
-                var articleElement = article.ToXML(generateGuids).ToXmlElement();
-                var importedNode = xmlDoc.ImportNode(articleElement, true);
-                rootElement.AppendChild(importedNode);
-            }
+            // foreach (var article in _legalAct.Articles)
+            // {
+            //     // Konwertuj XElement na XmlElement
+            //     var articleElement = article.ToXML(generateGuids).ToXmlElement();
+            //     var importedNode = xmlDoc.ImportNode(articleElement, true);
+            //     rootElement.AppendChild(importedNode);
+            // }
 
             xmlDoc.AppendChild(rootElement);
 

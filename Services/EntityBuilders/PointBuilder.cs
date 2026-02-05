@@ -1,8 +1,7 @@
 using DocumentFormat.OpenXml.Wordprocessing;
 using Serilog;
 using WordParserLibrary.Helpers;
-using WordParserLibrary.Model;
-using WordParserLibrary.Model.Schemas;
+using ModelDto;
 using WordParserLibrary.Services;
 
 namespace WordParserLibrary.Services.EntityBuilders
@@ -13,79 +12,79 @@ namespace WordParserLibrary.Services.EntityBuilders
     /// </summary>
     public class PointBuilder
     {
-        private readonly LegalReferenceService _legalReferenceService;
+        // private readonly LegalReferenceService _legalReferenceService;
 
-        public PointBuilder(LegalReferenceService? legalReferenceService = null)
-        {
-            _legalReferenceService = legalReferenceService ?? new LegalReferenceService();
-        }
+        // public PointBuilder(LegalReferenceService? legalReferenceService = null)
+        // {
+        //     _legalReferenceService = legalReferenceService ?? new LegalReferenceService();
+        // }
 
-        /// <summary>
-        /// Buduje PointDto z paragrafu i informacji o ustępie nadrzędnym.
-        /// </summary>
-        public PointDto Build(Paragraph paragraph, ParagraphDto parentParagraph, DateTime effectiveDate)
-        {
-            var point = new PointDto
-            {
-                Guid = Guid.NewGuid(),
-                UnitType = UnitType.Point,
-                EffectiveDate = effectiveDate,
-                Paragraph = parentParagraph,
-                Article = parentParagraph.Article,
-                Parent = parentParagraph,
-                LegalReference = new LegalReferenceDto
-                {
-                    PublicationNumber = parentParagraph.LegalReference?.PublicationNumber,
-                    PublicationYear = parentParagraph.LegalReference?.PublicationYear,
-                    Article = parentParagraph.LegalReference?.Article,
-                    Subsection = parentParagraph.LegalReference?.Subsection,
-                },
-                Letters = new(),
-                Amendments = new()
-            };
+        // /// <summary>
+        // /// Buduje PointDto z paragrafu i informacji o ustępie nadrzędnym.
+        // /// </summary>
+        // public PointDto Build(Paragraph paragraph, ParagraphDto parentParagraph, DateTime effectiveDate)
+        // {
+        //     var point = new PointDto
+        //     {
+        //         Guid = Guid.NewGuid(),
+        //         UnitType = UnitType.Point,
+        //         EffectiveDate = effectiveDate,
+        //         Paragraph = parentParagraph,
+        //         Article = parentParagraph.Article,
+        //         Parent = parentParagraph,
+        //         LegalReference = new LegalReferenceDto
+        //         {
+        //             PublicationNumber = parentParagraph.LegalReference?.PublicationNumber,
+        //             PublicationYear = parentParagraph.LegalReference?.PublicationYear,
+        //             Article = parentParagraph.LegalReference?.Article,
+        //             Subsection = parentParagraph.LegalReference?.Subsection,
+        //         },
+        //         Letters = new(),
+        //         Amendments = new()
+        //     };
 
-            // TODO: Parse paragraph content - użyć nowego podejścia do parsowania
-            point.ContentText = paragraph.InnerText.Sanitize().Trim();
-            var entityNumberService = new EntityNumberService();
-            point.Number = entityNumberService.Parse(point.ContentText);
+        //     // TODO: Parse paragraph content - użyć nowego podejścia do parsowania
+        //     point.ContentText = paragraph.InnerText.Sanitize().Trim();
+        //     var entityNumberService = new EntityNumberService();
+        //     point.Number = entityNumberService.Parse(point.ContentText);
 
-            // TODO: Obsługa błędów parsowania
+        //     // TODO: Obsługa błędów parsowania
 
-            Log.Information("Point: {Number} - {Content}", 
-                point.Number?.Value, 
-                point.ContentText.Substring(0, Math.Min(point.ContentText.Length, 100)));
+        //     Log.Information("Point: {Number} - {Content}", 
+        //         point.Number?.Value, 
+        //         point.ContentText.Substring(0, Math.Min(point.ContentText.Length, 100)));
 
-            bool isAdjacent = true;
-            var currentParagraph = paragraph;
-            while (currentParagraph?.NextSibling<Paragraph>() is Paragraph nextParagraph)
-            {
-                string? styleId = nextParagraph.StyleId();
-                if (string.IsNullOrEmpty(styleId))
-                {
-                    point.Error = true;
-                    point.ErrorMessage = $"Unexpected paragraph style in paragraph: {paragraph.InnerText}";
-                    Log.Error(point.ErrorMessage);
-                    currentParagraph = nextParagraph;
-                    continue;
-                }
+        //     bool isAdjacent = true;
+        //     var currentParagraph = paragraph;
+        //     while (currentParagraph?.NextSibling<Paragraph>() is Paragraph nextParagraph)
+        //     {
+        //         string? styleId = nextParagraph.StyleId();
+        //         if (string.IsNullOrEmpty(styleId))
+        //         {
+        //             var message = $"Unexpected paragraph style in paragraph: {paragraph.InnerText}";
+        //             point.ValidationMessages.Add(new ValidationMessage(ValidationLevel.Error, message));
+        //             Log.Error(message);
+        //             currentParagraph = nextParagraph;
+        //             continue;
+        //         }
 
-                if (styleId.StartsWith("PKT") || styleId.StartsWith("UST") || styleId.StartsWith("ART"))
-                {
-                    break;
-                }
-                else if (styleId.StartsWith("LIT"))
-                {
-                    var letterBuilder = new LetterBuilder(_legalReferenceService);
-                    var letter = letterBuilder.Build(nextParagraph, point, effectiveDate);
-                    point.Letters.Add(letter);
-                }
-                // TODO: Obsługa poprawek (Z)
+        //         if (styleId.StartsWith("PKT") || styleId.StartsWith("UST") || styleId.StartsWith("ART"))
+        //         {
+        //             break;
+        //         }
+        //         else if (styleId.StartsWith("LIT"))
+        //         {
+        //             var letterBuilder = new LetterBuilder(_legalReferenceService);
+        //             var letter = letterBuilder.Build(nextParagraph, point, effectiveDate);
+        //             point.Letters.Add(letter);
+        //         }
+        //         // TODO: Obsługa poprawek (Z)
 
-                currentParagraph = nextParagraph;
-            }
+        //         currentParagraph = nextParagraph;
+        //     }
 
-            point.Context = _legalReferenceService.GetContext(point);
-            return point;
-        }
+        //     point.Context = _legalReferenceService.GetContext(point);
+        //     return point;
+        // }
     }
 }

@@ -1,5 +1,5 @@
 using System.Xml.Linq;
-using WordParserLibrary.Model.Schemas;
+using ModelDto.EditorialUnits;
 
 namespace WordParserLibrary.Services.Converters
 {
@@ -8,27 +8,27 @@ namespace WordParserLibrary.Services.Converters
     /// </summary>
     public class PointXmlConverter
     {
-        public XElement ToXml(PointDto point, bool generateGuids = false)
-        {
-            var newElement = new XElement(XmlConstants.Point,
-                new XAttribute("id", point.Id));
-            if (generateGuids) newElement.Add(new XAttribute("guid", point.Guid));
-            newElement.AddFirst(new XElement(XmlConstants.Number, point.Number));
-            newElement.Add(new XElement("text", point.ContentText));
+        // public XElement ToXml(PointDto point, bool generateGuids = false)
+        // {
+        //     var newElement = new XElement(XmlConstants.Point,
+        //         new XAttribute("id", point.Id));
+        //     if (generateGuids) newElement.Add(new XAttribute("guid", point.Guid));
+        //     newElement.AddFirst(new XElement(XmlConstants.Number, point.Number));
+        //     newElement.Add(new XElement("text", point.ContentText));
 
-            foreach (var letter in point.Letters)
-            {
-                var letterConverter = new LetterXmlConverter();
-                newElement.Add(letterConverter.ToXml(letter, generateGuids));
-            }
+        //     foreach (var letter in point.Letters)
+        //     {
+        //         var letterConverter = new LetterXmlConverter();
+        //         newElement.Add(letterConverter.ToXml(letter, generateGuids));
+        //     }
 
-            // TODO: Dodać Amendment conversion
-            foreach (var amendment in point.Amendments)
-            {
-                // newElement.Add(amendment.ToXML(generateGuids));
-            }
+        //     // TODO: Dodać Amendment conversion
+        //     foreach (var amendment in point.Amendments)
+        //     {
+        //         // newElement.Add(amendment.ToXML(generateGuids));
+        //     }
 
-            return newElement;
-        }
+        //     return newElement;
+        // }
     }
 }

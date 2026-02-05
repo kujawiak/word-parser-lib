@@ -1,8 +1,7 @@
 using DocumentFormat.OpenXml.Wordprocessing;
 using Serilog;
 using WordParserLibrary.Helpers;
-using WordParserLibrary.Model;
-using WordParserLibrary.Model.Schemas;
+using ModelDto;
 using WordParserLibrary.Services;
 
 namespace WordParserLibrary.Services.EntityBuilders
@@ -13,83 +12,83 @@ namespace WordParserLibrary.Services.EntityBuilders
     /// </summary>
     public class LetterBuilder
     {
-        private readonly LegalReferenceService _legalReferenceService;
+    //     private readonly LegalReferenceService _legalReferenceService;
 
-        public LetterBuilder(LegalReferenceService? legalReferenceService = null)
-        {
-            _legalReferenceService = legalReferenceService ?? new LegalReferenceService();
-        }
+    //     public LetterBuilder(LegalReferenceService? legalReferenceService = null)
+    //     {
+    //         _legalReferenceService = legalReferenceService ?? new LegalReferenceService();
+    //     }
 
-        /// <summary>
-        /// Buduje LetterDto z paragrafu i informacji o punkcie nadrzędnym.
-        /// </summary>
-        public LetterDto Build(Paragraph paragraph, PointDto parentPoint, DateTime effectiveDate)
-        {
-            var letter = new LetterDto
-            {
-                Guid = Guid.NewGuid(),
-                UnitType = UnitType.Letter,
-                EffectiveDate = effectiveDate,
-                Point = parentPoint,
-                Paragraph = parentPoint.Paragraph,
-                Article = parentPoint.Article,
-                Parent = parentPoint,
-                LegalReference = new LegalReferenceDto
-                {
-                    PublicationNumber = parentPoint.LegalReference?.PublicationNumber,
-                    PublicationYear = parentPoint.LegalReference?.PublicationYear,
-                    Article = parentPoint.LegalReference?.Article,
-                    Subsection = parentPoint.LegalReference?.Subsection,
-                    Point = parentPoint.LegalReference?.Point,
-                },
-                Tirets = new(),
-                Amendments = new()
-            };
+    //     /// <summary>
+    //     /// Buduje LetterDto z paragrafu i informacji o punkcie nadrzędnym.
+    //     /// </summary>
+    //     public LetterDto Build(Paragraph paragraph, PointDto parentPoint, DateTime effectiveDate)
+    //     {
+    //         var letter = new LetterDto
+    //         {
+    //             Guid = Guid.NewGuid(),
+    //             UnitType = UnitType.Letter,
+    //             EffectiveDate = effectiveDate,
+    //             Point = parentPoint,
+    //             Paragraph = parentPoint.Paragraph,
+    //             Article = parentPoint.Article,
+    //             Parent = parentPoint,
+    //             LegalReference = new LegalReferenceDto
+    //             {
+    //                 PublicationNumber = parentPoint.LegalReference?.PublicationNumber,
+    //                 PublicationYear = parentPoint.LegalReference?.PublicationYear,
+    //                 Article = parentPoint.LegalReference?.Article,
+    //                 Subsection = parentPoint.LegalReference?.Subsection,
+    //                 Point = parentPoint.LegalReference?.Point,
+    //             },
+    //             Tirets = new(),
+    //             Amendments = new()
+    //         };
 
-            // TODO: Parse paragraph content - użyć nowego podejścia do parsowania
-            letter.ContentText = paragraph.InnerText.Sanitize().Trim();
+    //         // TODO: Parse paragraph content - użyć nowego podejścia do parsowania
+    //         letter.ContentText = paragraph.InnerText.Sanitize().Trim();
             
-            // Numer litery (np. 'a', 'b', 'aa') - przechowywany w Number
-            var entityNumberService = new EntityNumberService();
-            letter.Number = entityNumberService.Parse(letter.ContentText);
+    //         // Numer litery (np. 'a', 'b', 'aa') - przechowywany w Number
+    //         var entityNumberService = new EntityNumberService();
+    //         letter.Number = entityNumberService.Parse(letter.ContentText);
 
-            // TODO: Obsługa błędów parsowania
+    //         // TODO: Obsługa błędów parsowania
 
-            Log.Information("Letter: {Number} - {Content}", 
-                letter.Number?.Value, 
-                letter.ContentText.Substring(0, Math.Min(letter.ContentText.Length, 100)));
+    //         Log.Information("Letter: {Number} - {Content}", 
+    //             letter.Number?.Value, 
+    //             letter.ContentText.Substring(0, Math.Min(letter.ContentText.Length, 100)));
 
-            var currentParagraph = paragraph;
-            int tiretNumber = 1;
-            while (currentParagraph?.NextSibling<Paragraph>() is Paragraph nextParagraph)
-            {
-                string? styleId = nextParagraph.StyleId();
-                if (string.IsNullOrEmpty(styleId))
-                {
-                    letter.Error = true;
-                    letter.ErrorMessage = $"Unexpected paragraph style in paragraph: {paragraph.InnerText}";
-                    Log.Error(letter.ErrorMessage);
-                    currentParagraph = nextParagraph;
-                    continue;
-                }
+    //         var currentParagraph = paragraph;
+    //         int tiretNumber = 1;
+    //         while (currentParagraph?.NextSibling<Paragraph>() is Paragraph nextParagraph)
+    //         {
+    //             string? styleId = nextParagraph.StyleId();
+    //             if (string.IsNullOrEmpty(styleId))
+    //             {
+    //                 var message = $"Unexpected paragraph style in paragraph: {paragraph.InnerText}";
+    //                 letter.ValidationMessages.Add(new ValidationMessage(ValidationLevel.Error, message));
+    //                 Log.Error(message);
+    //                 currentParagraph = nextParagraph;
+    //                 continue;
+    //             }
 
-                if (styleId.StartsWith("LIT") || styleId.StartsWith("PKT") || styleId.StartsWith("UST") || styleId.StartsWith("ART"))
-                {
-                    break;
-                }
-                else if (styleId.StartsWith("TIR"))
-                {
-                    var tiretBuilder = new TiretBuilder(_legalReferenceService);
-                    var tiret = tiretBuilder.Build(nextParagraph, letter, effectiveDate, tiretNumber++);
-                    letter.Tirets.Add(tiret);
-                }
-                // TODO: Obsługa poprawek (Z)
+    //             if (styleId.StartsWith("LIT") || styleId.StartsWith("PKT") || styleId.StartsWith("UST") || styleId.StartsWith("ART"))
+    //             {
+    //                 break;
+    //             }
+    //             else if (styleId.StartsWith("TIR"))
+    //             {
+    //                 var tiretBuilder = new TiretBuilder(_legalReferenceService);
+    //                 var tiret = tiretBuilder.Build(nextParagraph, letter, effectiveDate, tiretNumber++);
+    //                 letter.Tirets.Add(tiret);
+    //             }
+    //             // TODO: Obsługa poprawek (Z)
 
-                currentParagraph = nextParagraph;
-            }
+    //             currentParagraph = nextParagraph;
+    //         }
 
-            letter.Context = _legalReferenceService.GetContext(letter);
-            return letter;
-        }
+    //         letter.Context = _legalReferenceService.GetContext(letter);
+    //         return letter;
+    //     }
     }
 }
