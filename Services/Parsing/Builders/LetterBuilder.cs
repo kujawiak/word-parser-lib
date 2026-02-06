@@ -26,15 +26,16 @@ namespace WordParserLibrary.Services.Parsing.Builders
 			var paragraph = input.Paragraph;
 			var article = input.Article;
 			var text = input.Text;
+			var contentText = ParsingFactories.StripLetterPrefix(text);
 			var letter = new DtoLetter
 			{
 				Parent = point,
 				Article = article,
 				Paragraph = paragraph,
 				Point = point,
-				ContentText = text,
 				Number = ParsingFactories.ParseLetterNumber(text)
 			};
+			ParsingFactories.SetContentAndSegments(letter, contentText);
 
 			point.Letters.Add(letter);
 			return letter;

@@ -23,13 +23,15 @@ namespace WordParserLibrary.Services.Parsing.Builders
 			var article = input.Article;
 			var currentParagraph = input.CurrentParagraph;
 			var text = input.Text;
+			var contentText = ParsingFactories.StripParagraphPrefix(text);
+
 			if (currentParagraph != null && currentParagraph.IsImplicit &&
 				string.IsNullOrWhiteSpace(currentParagraph.ContentText) &&
 				currentParagraph.Points.Count == 0)
 			{
-				currentParagraph.ContentText = text;
 				currentParagraph.Number = ParsingFactories.ParseParagraphNumber(text);
 				currentParagraph.IsImplicit = false;
+				ParsingFactories.SetContentAndSegments(currentParagraph, contentText);
 				return currentParagraph;
 			}
 
@@ -37,10 +39,10 @@ namespace WordParserLibrary.Services.Parsing.Builders
 			{
 				Parent = article,
 				Article = article,
-				ContentText = text,
 				Number = ParsingFactories.ParseParagraphNumber(text),
 				IsImplicit = false
 			};
+			ParsingFactories.SetContentAndSegments(paragraph, contentText);
 			article.Paragraphs.Add(paragraph);
 			return paragraph;
 		}

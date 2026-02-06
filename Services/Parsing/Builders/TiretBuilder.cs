@@ -28,6 +28,7 @@ namespace WordParserLibrary.Services.Parsing.Builders
 			var article = input.Article;
 			var text = input.Text;
 			var index = input.Index;
+			var contentText = ParsingFactories.StripTiretPrefix(text);
 			var tiret = new DtoTiret
 			{
 				Parent = letter,
@@ -35,9 +36,9 @@ namespace WordParserLibrary.Services.Parsing.Builders
 				Paragraph = paragraph,
 				Point = point,
 				Letter = letter,
-				ContentText = text,
 				Number = _numberService.Create(numericPart: index)
 			};
+			ParsingFactories.SetContentAndSegments(tiret, contentText);
 
 			letter.Tirets.Add(tiret);
 			return tiret;

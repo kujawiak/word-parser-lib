@@ -8,11 +8,87 @@ using DtoPoint = ModelDto.EditorialUnits.Point;
 namespace WordParserLibrary.Services.Parsing
 {
 	/// <summary>
-	/// Fabryki pomocnicze dla parsowania: tworzenie encji i parsowanie numerow.
+	/// Fabryki pomocnicze dla parsowania: tworzenie encji, parsowanie numerow,
+	/// usuwanie prefiksow numeracji i podzial tekstu na segmenty (zdania).
 	/// </summary>
 	public static class ParsingFactories
 	{
 		private static readonly EntityNumberService _numberService = new();
+
+		// Regexy do usuwania prefiksu numeru z tresci
+		private static readonly Regex ParagraphNumberPrefix = new(@"^\d+[a-zA-Z]*\.\s+", RegexOptions.Compiled);
+		private static readonly Regex PointNumberPrefix = new(@"^\d+[a-zA-Z]*\)\s*", RegexOptions.Compiled);
+		private static readonly Regex LetterNumberPrefix = new(@"^[a-zA-Z]{1,5}\)\s*", RegexOptions.Compiled);
+		private static readonly Regex TiretPrefix = new(@"^\u2013+\s*", RegexOptions.Compiled);
+
+		/// <summary>
+		/// Regex podzialu na zdania: kropka, po ktorej wystepuje spacja
+		/// i wielka litera (poczatek nowego zdania).
+		/// </summary>
+		private static readonly Regex SentenceSplitter = new(@"(?<=\.)\s+(?=[A-ZĄĆĘŁŃÓŚŹŻ])", RegexOptions.Compiled);
+
+		/// <summary>
+		/// Usuwa prefiks numeru ustepu (np. "1. ") z tekstu.
+		/// </summary>
+		public static string StripParagraphPrefix(string text)
+			=> ParagraphNumberPrefix.Replace(text.Trim(), "", 1);
+
+		/// <summary>
+		/// Usuwa prefiks numeru punktu (np. "1) ") z tekstu.
+		/// </summary>
+		public static string StripPointPrefix(string text)
+			=> PointNumberPrefix.Replace(text.Trim(), "", 1);
+
+		/// <summary>
+		/// Usuwa prefiks litery (np. "a) ") z tekstu.
+		/// </summary>
+		public static string StripLetterPrefix(string text)
+			=> LetterNumberPrefix.Replace(text.Trim(), "", 1);
+
+		/// <summary>
+		/// Usuwa prefiks tiretu (np. "– ") z tekstu.
+		/// </summary>
+		public static string StripTiretPrefix(string text)
+			=> TiretPrefix.Replace(text.Trim(), "", 1);
+
+		/// <summary>
+		/// Dzieli tekst na segmenty (zdania). Podział następuje w miejscu,
+		/// gdzie po kropce i spacji pojawia się wielka litera.
+		/// </summary>
+		public static List<TextSegment> SplitIntoSentences(string text)
+		{
+			var segments = new List<TextSegment>();
+			if (string.IsNullOrWhiteSpace(text))
+				return segments;
+
+			var parts = SentenceSplitter.Split(text);
+			for (int i = 0; i < parts.Length; i++)
+			{
+				var part = parts[i].Trim();
+				if (!string.IsNullOrEmpty(part))
+				{
+					segments.Add(new TextSegment
+					{
+						Type = TextSegmentType.Sentence,
+						Text = part,
+						Order = i + 1
+					});
+				}
+			}
+			return segments;
+		}
+
+		/// <summary>
+		/// Ustawia ContentText (bez numeru) i TextSegments na encji implementujacej IHasTextSegments.
+		/// </summary>
+		public static void SetContentAndSegments(BaseEntity entity, string contentWithoutNumber)
+		{
+			entity.ContentText = contentWithoutNumber;
+			if (entity is IHasTextSegments hasSegments)
+			{
+				hasSegments.TextSegments = SplitIntoSentences(contentWithoutNumber);
+			}
+		}
 		public static DtoParagraph CreateImplicitParagraph(DtoArticle article)
 		{
 			return new DtoParagraph
@@ -35,23 +111,26 @@ namespace WordParserLibrary.Services.Parsing
 			var match = Regex.Match(normalizedTail, "^(\\d+[a-zA-Z]*)\\.\\s+", RegexOptions.IgnoreCase);
 			if (match.Success)
 			{
-				return new DtoParagraph
+				var contentText = StripParagraphPrefix(normalizedTail);
+				var paragraph = new DtoParagraph
 				{
 					Parent = article,
 					Article = article,
-					ContentText = normalizedTail,
 					Number = _numberService.Parse(match.Groups[1].Value),
 					IsImplicit = false
 				};
+				SetContentAndSegments(paragraph, contentText);
+				return paragraph;
 			}
 
-			return new DtoParagraph
+			var implicitParagraph = new DtoParagraph
 			{
 				Parent = article,
 				Article = article,
-				ContentText = normalizedTail,
 				IsImplicit = true
 			};
+			SetContentAndSegments(implicitParagraph, normalizedTail);
+			return implicitParagraph;
 		}
 
 		public static DtoPoint CreateImplicitPoint(DtoParagraph? paragraph, DtoArticle article)

@@ -24,14 +24,15 @@ namespace WordParserLibrary.Services.Parsing.Builders
 			var paragraph = input.Paragraph;
 			var article = input.Article;
 			var text = input.Text;
+			var contentText = ParsingFactories.StripPointPrefix(text);
 			var point = new DtoPoint
 			{
 				Parent = paragraph,
 				Article = article,
 				Paragraph = paragraph,
-				ContentText = text,
 				Number = ParsingFactories.ParsePointNumber(text)
 			};
+			ParsingFactories.SetContentAndSegments(point, contentText);
 
 			paragraph.Points.Add(point);
 			return point;
