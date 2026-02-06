@@ -12,6 +12,7 @@ namespace WordParserLibrary.Services.Parsing
 	/// </summary>
 	public static class ParsingFactories
 	{
+		private static readonly EntityNumberService _numberService = new();
 		public static DtoParagraph CreateImplicitParagraph(DtoArticle article)
 		{
 			return new DtoParagraph
@@ -39,7 +40,7 @@ namespace WordParserLibrary.Services.Parsing
 					Parent = article,
 					Article = article,
 					ContentText = normalizedTail,
-					Number = CreateNumber(match.Groups[1].Value),
+					Number = _numberService.Parse(match.Groups[1].Value),
 					IsImplicit = false
 				};
 			}
@@ -86,7 +87,7 @@ namespace WordParserLibrary.Services.Parsing
 			var match = Regex.Match(text, "^Art\\.?\\s*(\\d+[a-zA-Z]*)", RegexOptions.IgnoreCase);
 			if (match.Success)
 			{
-				return CreateNumber(match.Groups[1].Value);
+				return _numberService.Parse(match.Groups[1].Value);
 			}
 
 			return null;
@@ -102,7 +103,7 @@ namespace WordParserLibrary.Services.Parsing
 			var match = Regex.Match(text.Trim(), "^(\\d+[a-zA-Z]*)\\.\\s+", RegexOptions.IgnoreCase);
 			if (match.Success)
 			{
-				return CreateNumber(match.Groups[1].Value);
+				return _numberService.Parse(match.Groups[1].Value);
 			}
 
 			return null;
@@ -118,7 +119,7 @@ namespace WordParserLibrary.Services.Parsing
 			var match = Regex.Match(text.Trim(), "^(\\d+[a-zA-Z]*)\\)\\s*", RegexOptions.IgnoreCase);
 			if (match.Success)
 			{
-				return CreateNumber(match.Groups[1].Value);
+				return _numberService.Parse(match.Groups[1].Value);
 			}
 
 			return null;
@@ -132,28 +133,7 @@ namespace WordParserLibrary.Services.Parsing
 			}
 
 			var match = Regex.Match(text.Trim(), "^([a-zA-Z]{1,5})\\)\\s*", RegexOptions.IgnoreCase);
-			return match.Success ? CreateNumber(match.Groups[1].Value) : null;
-		}
-
-		public static EntityNumber CreateNumber(string rawValue)
-		{
-			var number = new EntityNumber
-			{
-				RawValue = rawValue,
-				Value = rawValue
-			};
-
-			var match = Regex.Match(rawValue, "^(\\d+)([a-zA-Z]*)$");
-			if (match.Success)
-			{
-				if (int.TryParse(match.Groups[1].Value, out var numeric))
-				{
-					number.NumericPart = numeric;
-				}
-				number.LexicalPart = match.Groups[2].Value;
-			}
-
-			return number;
+			return match.Success ? _numberService.Parse(match.Groups[1].Value) : null;
 		}
 
 		public static string GetArticleTail(string text)

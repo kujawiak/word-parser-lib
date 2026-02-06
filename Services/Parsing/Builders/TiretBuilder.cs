@@ -1,4 +1,5 @@
 using ModelDto;
+using WordParserLibrary.Services;
 using DtoArticle = ModelDto.EditorialUnits.Article;
 using DtoLetter = ModelDto.EditorialUnits.Letter;
 using DtoParagraph = ModelDto.EditorialUnits.Paragraph;
@@ -17,6 +18,8 @@ namespace WordParserLibrary.Services.Parsing.Builders
 	/// </summary>
 	public sealed class TiretBuilder : IEntityBuilder<TiretBuildInput, DtoTiret>
 	{
+		private static readonly EntityNumberService _numberService = new();
+
 		public DtoTiret Build(TiretBuildInput input)
 		{
 			var letter = input.Letter;
@@ -33,7 +36,7 @@ namespace WordParserLibrary.Services.Parsing.Builders
 				Point = point,
 				Letter = letter,
 				ContentText = text,
-				Number = ParsingFactories.CreateNumber(index.ToString())
+				Number = _numberService.Create(numericPart: index)
 			};
 
 			letter.Tirets.Add(tiret);
