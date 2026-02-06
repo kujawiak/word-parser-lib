@@ -34,6 +34,17 @@ namespace WordParserLibrary.Services.Parsing
 			var styleId = paragraph.StyleId();
 			var classification = _classifier.Classify(text, styleId);
 
+			// Sledzenie cudzysłowow: aktualizuj stan kontekstu
+			UpdateQuotationState(context, text, classification);
+
+			// Pomijaj akapity w nowelizacji (styl Z/... lub wewnatrz cudzysłowow)
+			if (classification.IsAmendmentContent || context.InsideQuotation)
+			{
+				Log.Debug("Pominieto akapit nowelizacji: styl={StyleId}, insideQuote={InsideQuote}, text={Text}",
+					styleId, context.InsideQuotation, text.Length > 50 ? text.Substring(0, 50) + "..." : text);
+				return;
+			}
+
 			if (classification.Kind == ParagraphKind.Article)
 			{
 				var result = _articleBuilder.Build(new ArticleBuildInput(context.Subchapter, text));
@@ -194,6 +205,49 @@ namespace WordParserLibrary.Services.Parsing
 
 			Log.Debug("Wykryto cel nowelizacji w {UnitType} [{EntityId}]: {AmendmentTarget}",
 				entity.UnitType, entity.Id, amendmentRef);
+		}
+
+		/// <summary>
+		/// Aktualizuje stan kontekstu czy jestesmy wewnatrz cudzysłowu (treść nowelizacji).
+		/// Zwroty typu "otrzymuje brzmienie:" lub "w brzmieniu:" otwieraja cudzysłów,
+		/// a zamkniety cudzysłów konczy nowelizacje.
+		/// </summary>
+		private static void UpdateQuotationState(ParsingContext context, string text, ClassificationResult classification)
+		{
+			// Automatycznie traktuj akapity ze stylami Z/... jako nowelizacje
+			if (classification.IsAmendmentContent)
+			{
+				context.InsideQuotation = true;
+				return;
+			}
+
+			// Sprawdz czy tekst zawiera zwroty otwierajace nowelizacje
+			if (text.Contains("otrzymuje brzmienie:", StringComparison.OrdinalIgnoreCase) ||
+				text.Contains("w brzmieniu:", StringComparison.OrdinalIgnoreCase))
+			{
+				// Rozpoczynamy nowelizacje - spodziewamy sie cudzysłowow
+				context.InsideQuotation = true;
+				Log.Debug("Wykryto rozpoczecie nowelizacji: {Trigger}", text.Length > 80 ? text.Substring(0, 80) + "..." : text);
+				return;
+			}
+
+			// Zlicz cudzysłowy w tekscie
+			int openQuotes = 0;
+			int closeQuotes = 0;
+			foreach (char c in text)
+			{
+				if (c == '"' || c == '\u201C') // " lub cudzysłow otwierajacy
+					openQuotes++;
+				else if (c == '"' || c == '\u201D') // " lub cudzysłow zamykajacy
+					closeQuotes++;
+			}
+
+			// Prosta logika: jezeli zamykamy więcej niż otwieramy, wychodzimy z nowelizacji
+			if (context.InsideQuotation && closeQuotes > openQuotes)
+			{
+				context.InsideQuotation = false;
+				Log.Debug("Zamknieto nowelizacje (cudzysłow zamykajacy)");
+			}
 		}
 	}
 }

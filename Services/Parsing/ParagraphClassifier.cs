@@ -22,6 +22,7 @@ namespace WordParserLibrary.Services.Parsing
 		public string? StyleType { get; set; }
 		public bool UsedFallback { get; set; }
 		public bool StyleTextConflict { get; set; }
+		public bool IsAmendmentContent { get; set; }
 	}
 
 	/// <summary>
@@ -45,6 +46,13 @@ namespace WordParserLibrary.Services.Parsing
 			{
 				StyleType = styleType
 			};
+
+			// Sprawdz czy to styl nowelizacji (Z/...)
+			if (styleType == "AMENDMENT")
+			{
+				result.IsAmendmentContent = true;
+				return result;
+			}
 
 			if (isArticleByText)
 			{
@@ -94,6 +102,12 @@ namespace WordParserLibrary.Services.Parsing
 			if (string.IsNullOrEmpty(styleId))
 			{
 				return null;
+			}
+
+			// Wykryj style nowelizacji (zaczynajace sie od "Z/")
+			if (styleId.StartsWith("Z/", StringComparison.OrdinalIgnoreCase))
+			{
+				return "AMENDMENT";
 			}
 
 			if (styleId.StartsWith("ART", StringComparison.OrdinalIgnoreCase))

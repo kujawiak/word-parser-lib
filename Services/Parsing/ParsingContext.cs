@@ -46,5 +46,11 @@ namespace WordParserLibrary.Services.Parsing
 		/// Wypelniane przez orkiestrator podczas parsowania encji IHasAmendments.
 		/// </summary>
 		public Dictionary<Guid, StructuralAmendmentReference> DetectedAmendmentTargets { get; } = new();
+
+		/// <summary>
+		/// Czy aktualnie przetwarza akapity wewnatrz cudzysłowu (treść nowelizacji).
+		/// Akapity ze stylami "Z/..." sa automatycznie traktowane jako czesć nowelizacji.
+		/// </summary>
+		public bool InsideQuotation { get; set; }
 	}
 }
