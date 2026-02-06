@@ -18,6 +18,7 @@ namespace WordParserLibrary.Services.Parsing
 		private readonly PointBuilder _pointBuilder = new();
 		private readonly LetterBuilder _letterBuilder = new();
 		private readonly TiretBuilder _tiretBuilder = new();
+		private readonly NumberingContinuityValidator _numberingValidator = new();
 
 		/// <summary>
 		/// Przetwarza pojedynczy akapit i aktualizuje stan kontekstu.
@@ -36,6 +37,7 @@ namespace WordParserLibrary.Services.Parsing
 			if (classification.Kind == ParagraphKind.Article)
 			{
 				var result = _articleBuilder.Build(new ArticleBuildInput(context.Subchapter, text));
+				_numberingValidator.ValidateArticle(result.Article);
 				context.CurrentArticle = result.Article;
 				context.CurrentParagraph = result.Paragraph;
 				context.CurrentPoint = null;
@@ -60,6 +62,7 @@ namespace WordParserLibrary.Services.Parsing
 			{
 				case ParagraphKind.Paragraph:
 					context.CurrentParagraph = _paragraphBuilder.Build(new ParagraphBuildInput(context.CurrentArticle, context.CurrentParagraph, text));
+					_numberingValidator.ValidateParagraph(context.CurrentParagraph);
 					ValidationReporter.AddClassificationWarning(context.CurrentParagraph, classification, "UST");
 					context.CurrentPoint = null;
 					context.CurrentLetter = null;
@@ -72,6 +75,7 @@ namespace WordParserLibrary.Services.Parsing
 					var ensuredParagraph = _paragraphBuilder.EnsureForPoint(context.CurrentArticle, context.CurrentParagraph);
 					context.CurrentParagraph = ensuredParagraph.Paragraph;
 					context.CurrentPoint = _pointBuilder.Build(new PointBuildInput(context.CurrentParagraph, context.CurrentArticle, text));
+					_numberingValidator.ValidatePoint(context.CurrentPoint);
 					ValidationReporter.AddClassificationWarning(context.CurrentPoint, classification, "PKT");
 					context.CurrentLetter = null;
 					context.CurrentTiretIndex = 0;
@@ -88,6 +92,7 @@ namespace WordParserLibrary.Services.Parsing
 							"Brak jawnego punktu; utworzono niejawny punkt na podstawie struktury.");
 					}
 					context.CurrentLetter = _letterBuilder.Build(new LetterBuildInput(context.CurrentPoint, context.CurrentParagraph, context.CurrentArticle, text));
+					_numberingValidator.ValidateLetter(context.CurrentLetter);
 					ValidationReporter.AddClassificationWarning(context.CurrentLetter, classification, "LIT");
 					context.CurrentTiretIndex = 0;
 
