@@ -112,7 +112,7 @@ namespace WordParserLibrary.Services.Parsing
 				return null;
 			}
 
-			var match = Regex.Match(text.Trim(), "^(\\d+[a-zA-Z]*)\\)\\s+", RegexOptions.IgnoreCase);
+			var match = Regex.Match(text.Trim(), "^(\\d+[a-zA-Z]*)\\)\\s*", RegexOptions.IgnoreCase);
 			if (match.Success)
 			{
 				return CreateNumber(match.Groups[1].Value);
@@ -128,7 +128,7 @@ namespace WordParserLibrary.Services.Parsing
 				return null;
 			}
 
-			var match = Regex.Match(text.Trim(), "^([a-zA-Z]{1,5})\\)\\s+", RegexOptions.IgnoreCase);
+			var match = Regex.Match(text.Trim(), "^([a-zA-Z]{1,5})\\)\\s*", RegexOptions.IgnoreCase);
 			return match.Success ? CreateNumber(match.Groups[1].Value) : null;
 		}
 

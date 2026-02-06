@@ -123,12 +123,12 @@ namespace WordParserLibrary.Services.Parsing
 
 		public static bool IsPointByText(string text)
 		{
-			return Regex.IsMatch(text, "^\\d+[a-zA-Z]*\\)\\s+", RegexOptions.IgnoreCase);
+			return Regex.IsMatch(text, "^\\d+[a-zA-Z]*\\)\\s*", RegexOptions.IgnoreCase);
 		}
 
 		public static bool IsLetterByText(string text)
 		{
-			return Regex.IsMatch(text, "^[a-zA-Z]{1,5}\\)\\s+", RegexOptions.IgnoreCase);
+			return Regex.IsMatch(text, "^[a-zA-Z]{1,5}\\)\\s*", RegexOptions.IgnoreCase);
 		}
 
 		public static bool IsTiretByText(string text)
