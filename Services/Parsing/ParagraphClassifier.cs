@@ -21,7 +21,7 @@ namespace WordParserLibrary.Services.Parsing
 		public bool StyleTextConflict { get; set; }
 	}
 
-	public sealed class ParagraphClassifier
+	public sealed class ParagraphClassifier : IParagraphClassifier
 	{
 		public ClassificationResult Classify(string text, string? styleId)
 		{

@@ -7,10 +7,18 @@ using DtoTiret = ModelDto.EditorialUnits.Tiret;
 
 namespace WordParserLibrary.Services.Parsing.Builders
 {
-	public sealed class TiretBuilder
+	public sealed record TiretBuildInput(DtoLetter Letter, DtoPoint? Point, DtoParagraph? Paragraph, DtoArticle Article, string Text, int Index);
+
+	public sealed class TiretBuilder : IEntityBuilder<TiretBuildInput, DtoTiret>
 	{
-		public DtoTiret Build(DtoLetter letter, DtoPoint? point, DtoParagraph? paragraph, DtoArticle article, string text, int index)
+		public DtoTiret Build(TiretBuildInput input)
 		{
+			var letter = input.Letter;
+			var point = input.Point;
+			var paragraph = input.Paragraph;
+			var article = input.Article;
+			var text = input.Text;
+			var index = input.Index;
 			var tiret = new DtoTiret
 			{
 				Parent = letter,
@@ -24,6 +32,11 @@ namespace WordParserLibrary.Services.Parsing.Builders
 
 			letter.Tirets.Add(tiret);
 			return tiret;
+		}
+
+		public DtoTiret Build(DtoLetter letter, DtoPoint? point, DtoParagraph? paragraph, DtoArticle article, string text, int index)
+		{
+			return Build(new TiretBuildInput(letter, point, paragraph, article, text, index));
 		}
 	}
 }

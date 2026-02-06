@@ -3,10 +3,16 @@ using DtoParagraph = ModelDto.EditorialUnits.Paragraph;
 
 namespace WordParserLibrary.Services.Parsing.Builders
 {
-	public sealed class ParagraphBuilder
+	public sealed record ParagraphBuildInput(DtoArticle Article, DtoParagraph? CurrentParagraph, string Text);
+	public sealed record ParagraphEnsureResult(DtoParagraph Paragraph, bool CreatedImplicit);
+
+	public sealed class ParagraphBuilder : IEntityBuilder<ParagraphBuildInput, DtoParagraph>
 	{
-		public DtoParagraph Build(DtoArticle article, DtoParagraph? currentParagraph, string text)
+		public DtoParagraph Build(ParagraphBuildInput input)
 		{
+			var article = input.Article;
+			var currentParagraph = input.CurrentParagraph;
+			var text = input.Text;
 			if (currentParagraph != null && currentParagraph.IsImplicit &&
 				string.IsNullOrWhiteSpace(currentParagraph.ContentText) &&
 				currentParagraph.Points.Count == 0)
@@ -27,6 +33,23 @@ namespace WordParserLibrary.Services.Parsing.Builders
 			};
 			article.Paragraphs.Add(paragraph);
 			return paragraph;
+		}
+
+		public DtoParagraph Build(DtoArticle article, DtoParagraph? currentParagraph, string text)
+		{
+			return Build(new ParagraphBuildInput(article, currentParagraph, text));
+		}
+
+		public ParagraphEnsureResult EnsureForPoint(DtoArticle article, DtoParagraph? currentParagraph)
+		{
+			if (currentParagraph != null)
+			{
+				return new ParagraphEnsureResult(currentParagraph, false);
+			}
+
+			var paragraph = ParsingFactories.CreateImplicitParagraph(article);
+			article.Paragraphs.Add(paragraph);
+			return new ParagraphEnsureResult(paragraph, true);
 		}
 
 		public DtoParagraph CreateImplicit(DtoArticle article)

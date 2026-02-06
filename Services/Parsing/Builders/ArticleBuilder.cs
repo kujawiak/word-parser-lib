@@ -4,6 +4,8 @@ using DtoParagraph = ModelDto.EditorialUnits.Paragraph;
 
 namespace WordParserLibrary.Services.Parsing.Builders
 {
+	public sealed record ArticleBuildInput(Subchapter Subchapter, string Text);
+
 	public sealed class ArticleBuildResult
 	{
 		public ArticleBuildResult(DtoArticle article, DtoParagraph paragraph)
@@ -16,10 +18,12 @@ namespace WordParserLibrary.Services.Parsing.Builders
 		public DtoParagraph Paragraph { get; }
 	}
 
-	public sealed class ArticleBuilder
+	public sealed class ArticleBuilder : IEntityBuilder<ArticleBuildInput, ArticleBuildResult>
 	{
-		public ArticleBuildResult Build(Subchapter subchapter, string text)
+		public ArticleBuildResult Build(ArticleBuildInput input)
 		{
+			var subchapter = input.Subchapter;
+			var text = input.Text;
 			var article = new DtoArticle
 			{
 				Parent = subchapter,
@@ -34,6 +38,11 @@ namespace WordParserLibrary.Services.Parsing.Builders
 			article.Paragraphs.Add(paragraph);
 
 			return new ArticleBuildResult(article, paragraph);
+		}
+
+		public ArticleBuildResult Build(Subchapter subchapter, string text)
+		{
+			return Build(new ArticleBuildInput(subchapter, text));
 		}
 	}
 }
