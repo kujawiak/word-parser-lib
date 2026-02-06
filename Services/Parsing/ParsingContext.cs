@@ -48,9 +48,19 @@ namespace WordParserLibrary.Services.Parsing
 		public Dictionary<Guid, StructuralAmendmentReference> DetectedAmendmentTargets { get; } = new();
 
 		/// <summary>
-		/// Czy aktualnie przetwarza akapity wewnatrz cudzysłowu (treść nowelizacji).
-		/// Akapity ze stylami "Z/..." sa automatycznie traktowane jako czesć nowelizacji.
+		/// Czy aktualnie przetwarza akapity bedace trescia nowelizacji.
+		/// Ustawiane na true gdy:
+		/// - napotkano akapit ze stylem Z/... (Z/UST, Z/ART, Z/PKT itd.)
+		/// - po triggerze ("otrzymuje brzmienie:") napotkano akapit bez stylu ustawy matki
+		/// Resetowane gdy napotkano akapit z rozpoznanym stylem ustawy matki (ART, UST, PKT, LIT, TIR).
 		/// </summary>
-		public bool InsideQuotation { get; set; }
+		public bool InsideAmendment { get; set; }
+
+		/// <summary>
+		/// Czy przetworzony wlasnie akapit zawieral zwrot rozpoczynajacy nowelizacje
+		/// ("otrzymuje brzmienie:", "w brzmieniu:"). Ustawiane PO przetworzeniu
+		/// akapitu, sprawdzane PRZED przetworzeniem nastepnego.
+		/// </summary>
+		public bool AmendmentTriggerDetected { get; set; }
 	}
 }

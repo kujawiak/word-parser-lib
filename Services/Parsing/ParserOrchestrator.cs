@@ -34,14 +34,14 @@ namespace WordParserLibrary.Services.Parsing
 			var styleId = paragraph.StyleId();
 			var classification = _classifier.Classify(text, styleId);
 
-			// Sledzenie cudzysłowow: aktualizuj stan kontekstu
-			UpdateQuotationState(context, text, classification);
+			// Sprawdz i aktualizuj stan nowelizacji PRZED przetwarzaniem
+			UpdateAmendmentState(context, classification);
 
-			// Pomijaj akapity w nowelizacji (styl Z/... lub wewnatrz cudzysłowow)
-			if (classification.IsAmendmentContent || context.InsideQuotation)
+			// Pomijaj akapity w nowelizacji (styl Z/... lub wewnatrz tresci nowelizacji)
+			if (classification.IsAmendmentContent || context.InsideAmendment)
 			{
-				Log.Debug("Pominieto akapit nowelizacji: styl={StyleId}, insideQuote={InsideQuote}, text={Text}",
-					styleId, context.InsideQuotation, text.Length > 50 ? text.Substring(0, 50) + "..." : text);
+				Log.Debug("Pominieto akapit nowelizacji: styl={StyleId}, insideAmendment={Inside}, text={Text}",
+					styleId, context.InsideAmendment, text.Length > 60 ? text.Substring(0, 60) + "..." : text);
 				return;
 			}
 
@@ -61,6 +61,7 @@ namespace WordParserLibrary.Services.Parsing
 					UpdateStructuralReference(context, result.Paragraph);
 					DetectAmendmentTargets(context, result.Paragraph);
 				}
+				DetectAmendmentTrigger(context, text);
 				return;
 			}
 
@@ -81,6 +82,7 @@ namespace WordParserLibrary.Services.Parsing
 
 					UpdateStructuralReference(context, context.CurrentParagraph);
 					DetectAmendmentTargets(context, context.CurrentParagraph);
+					DetectAmendmentTrigger(context, text);
 					break;
 				case ParagraphKind.Point:
 					var ensuredParagraph = _paragraphBuilder.EnsureForPoint(context.CurrentArticle, context.CurrentParagraph);
@@ -93,6 +95,7 @@ namespace WordParserLibrary.Services.Parsing
 
 					UpdateStructuralReference(context, context.CurrentPoint);
 					DetectAmendmentTargets(context, context.CurrentPoint);
+					DetectAmendmentTrigger(context, text);
 					break;
 				case ParagraphKind.Letter:
 					var ensuredPoint = _pointBuilder.EnsureForLetter(context.CurrentParagraph, context.CurrentArticle, context.CurrentPoint);
@@ -109,6 +112,7 @@ namespace WordParserLibrary.Services.Parsing
 
 					UpdateStructuralReference(context, context.CurrentLetter);
 					DetectAmendmentTargets(context, context.CurrentLetter);
+					DetectAmendmentTrigger(context, text);
 					break;
 				case ParagraphKind.Tiret:
 					var ensuredPointForTiret = _pointBuilder.EnsureForLetter(context.CurrentParagraph, context.CurrentArticle, context.CurrentPoint);
@@ -134,6 +138,7 @@ namespace WordParserLibrary.Services.Parsing
 
 					UpdateStructuralReference(context, tiret);
 					DetectAmendmentTargets(context, tiret);
+					DetectAmendmentTrigger(context, text);
 					break;
 				default:
 					break;
@@ -208,45 +213,65 @@ namespace WordParserLibrary.Services.Parsing
 		}
 
 		/// <summary>
-		/// Aktualizuje stan kontekstu czy jestesmy wewnatrz cudzysłowu (treść nowelizacji).
-		/// Zwroty typu "otrzymuje brzmienie:" lub "w brzmieniu:" otwieraja cudzysłów,
-		/// a zamkniety cudzysłów konczy nowelizacje.
+		/// Aktualizuje stan kontekstu nowelizacji na podstawie stylu akapitu.
+		/// Logika oparta na stylach (nie na cudzysłowach):
+		/// - Styl Z/... → zawsze nowelizacja
+		/// - Rozpoznany styl ustawy matki (ART/UST/PKT/LIT/TIR) → wyjscie z nowelizacji
+		/// - Brak stylu + trigger → wejscie w nowelizacje
+		/// - Brak stylu + juz w nowelizacji → pozostaje w nowelizacji
 		/// </summary>
-		private static void UpdateQuotationState(ParsingContext context, string text, ClassificationResult classification)
+		private static void UpdateAmendmentState(ParsingContext context, ClassificationResult classification)
 		{
-			// Automatycznie traktuj akapity ze stylami Z/... jako nowelizacje
+			// 1. Styl Z/... → zawsze nowelizacja
 			if (classification.IsAmendmentContent)
 			{
-				context.InsideQuotation = true;
+				context.InsideAmendment = true;
+				context.AmendmentTriggerDetected = false;
 				return;
 			}
 
-			// Sprawdz czy tekst zawiera zwroty otwierajace nowelizacje
+			// 2. Rozpoznany styl ustawy matki → wyjscie z trybu nowelizacji
+			if (classification.StyleType != null)
+			{
+				if (context.InsideAmendment)
+				{
+					Log.Debug("Zamknieto nowelizacje (styl ustawy matki: {Style})", classification.StyleType);
+					context.InsideAmendment = false;
+				}
+				// Trigger jest czyszczony — ten akapit ma styl ustawy matki,
+				// wiec nie jest trescia nowelizacji. Nowy trigger zostanie
+				// ustawiony PO przetworzeniu tego akapitu jesli zawiera zwrot.
+				context.AmendmentTriggerDetected = false;
+				return;
+			}
+
+			// 3. Brak rozpoznanego stylu ustawy matki
+			if (context.AmendmentTriggerDetected)
+			{
+				// Po triggerze napotkano akapit bez stylu → to treść nowelizacji
+				context.InsideAmendment = true;
+				context.AmendmentTriggerDetected = false;
+				Log.Debug("Wejscie w nowelizacje po triggerze (brak stylu ustawy matki)");
+				return;
+			}
+
+			// 4. Brak stylu + juz w nowelizacji → pozostaje w nowelizacji
+			// 5. Brak stylu + normalny tryb → przetwarzane normalnie (z fallback warning)
+		}
+
+		/// <summary>
+		/// Sprawdza czy przetworzony akapit zawiera zwrot rozpoczynajacy nowelizacje.
+		/// Wywolywane PO przetworzeniu akapitu (po budowaniu encji).
+		/// </summary>
+		private static void DetectAmendmentTrigger(ParsingContext context, string text)
+		{
 			if (text.Contains("otrzymuje brzmienie:", StringComparison.OrdinalIgnoreCase) ||
-				text.Contains("w brzmieniu:", StringComparison.OrdinalIgnoreCase))
+				text.Contains("w brzmieniu:", StringComparison.OrdinalIgnoreCase) ||
+				text.Contains("otrzymują brzmienie:", StringComparison.OrdinalIgnoreCase))
 			{
-				// Rozpoczynamy nowelizacje - spodziewamy sie cudzysłowow
-				context.InsideQuotation = true;
-				Log.Debug("Wykryto rozpoczecie nowelizacji: {Trigger}", text.Length > 80 ? text.Substring(0, 80) + "..." : text);
-				return;
-			}
-
-			// Zlicz cudzysłowy w tekscie
-			int openQuotes = 0;
-			int closeQuotes = 0;
-			foreach (char c in text)
-			{
-				if (c == '"' || c == '\u201C') // " lub cudzysłow otwierajacy
-					openQuotes++;
-				else if (c == '"' || c == '\u201D') // " lub cudzysłow zamykajacy
-					closeQuotes++;
-			}
-
-			// Prosta logika: jezeli zamykamy więcej niż otwieramy, wychodzimy z nowelizacji
-			if (context.InsideQuotation && closeQuotes > openQuotes)
-			{
-				context.InsideQuotation = false;
-				Log.Debug("Zamknieto nowelizacje (cudzysłow zamykajacy)");
+				context.AmendmentTriggerDetected = true;
+				Log.Debug("Wykryto zwrot nowelizacyjny: {Text}",
+					text.Length > 80 ? text.Substring(0, 80) + "..." : text);
 			}
 		}
 	}
