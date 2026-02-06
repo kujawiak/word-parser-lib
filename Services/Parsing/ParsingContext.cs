@@ -7,6 +7,9 @@ using DtoPoint = ModelDto.EditorialUnits.Point;
 
 namespace WordParserLibrary.Services.Parsing
 {
+	/// <summary>
+	/// Kontekst parsowania przechowujacy aktualny stan drzewa encji.
+	/// </summary>
 	public sealed class ParsingContext
 	{
 		public ParsingContext(LegalDocument document, Subchapter subchapter)

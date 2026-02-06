@@ -7,6 +7,9 @@ using DtoPoint = ModelDto.EditorialUnits.Point;
 
 namespace WordParserLibrary.Services.Parsing
 {
+	/// <summary>
+	/// Fabryki pomocnicze dla parsowania: tworzenie encji i parsowanie numerow.
+	/// </summary>
 	public static class ParsingFactories
 	{
 		public static DtoParagraph CreateImplicitParagraph(DtoArticle article)

@@ -2,6 +2,9 @@ using ModelDto;
 
 namespace WordParserLibrary.Services.Parsing
 {
+	/// <summary>
+	/// Rejestruje ostrzezenia i komunikaty walidacji na encjach DTO.
+	/// </summary>
 	public static class ValidationReporter
 	{
 		public static void AddClassificationWarning(BaseEntity entity, ClassificationResult classification, string expectedType)

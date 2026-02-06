@@ -4,8 +4,14 @@ using DtoParagraph = ModelDto.EditorialUnits.Paragraph;
 
 namespace WordParserLibrary.Services.Parsing.Builders
 {
+	/// <summary>
+	/// Wejscie dla budowania artykulu (subchapter + tekst akapitu).
+	/// </summary>
 	public sealed record ArticleBuildInput(Subchapter Subchapter, string Text);
 
+	/// <summary>
+	/// Wynik budowania artykulu (artykul + pierwszy ustep).
+	/// </summary>
 	public sealed class ArticleBuildResult
 	{
 		public ArticleBuildResult(DtoArticle article, DtoParagraph paragraph)
@@ -18,6 +24,9 @@ namespace WordParserLibrary.Services.Parsing.Builders
 		public DtoParagraph Paragraph { get; }
 	}
 
+	/// <summary>
+	/// Builder artykulu: tworzy Article oraz pierwszy ustep z ogona "Art.".
+	/// </summary>
 	public sealed class ArticleBuilder : IEntityBuilder<ArticleBuildInput, ArticleBuildResult>
 	{
 		public ArticleBuildResult Build(ArticleBuildInput input)

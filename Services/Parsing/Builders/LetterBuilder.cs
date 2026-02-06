@@ -5,9 +5,19 @@ using DtoPoint = ModelDto.EditorialUnits.Point;
 
 namespace WordParserLibrary.Services.Parsing.Builders
 {
+	/// <summary>
+	/// Wejscie dla budowania litery (punkt + ustep + artykul + tekst).
+	/// </summary>
 	public sealed record LetterBuildInput(DtoPoint Point, DtoParagraph? Paragraph, DtoArticle Article, string Text);
+
+	/// <summary>
+	/// Wynik zapewnienia litery (niejawna/jawna).
+	/// </summary>
 	public sealed record LetterEnsureResult(DtoLetter Letter, bool CreatedImplicit);
 
+	/// <summary>
+	/// Builder litery: tworzy litere i parsuje jej oznaczenie.
+	/// </summary>
 	public sealed class LetterBuilder : IEntityBuilder<LetterBuildInput, DtoLetter>
 	{
 		public DtoLetter Build(LetterBuildInput input)

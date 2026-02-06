@@ -7,8 +7,14 @@ using DtoTiret = ModelDto.EditorialUnits.Tiret;
 
 namespace WordParserLibrary.Services.Parsing.Builders
 {
+	/// <summary>
+	/// Wejscie dla budowania tiretu (litera + kontekst + indeks).
+	/// </summary>
 	public sealed record TiretBuildInput(DtoLetter Letter, DtoPoint? Point, DtoParagraph? Paragraph, DtoArticle Article, string Text, int Index);
 
+	/// <summary>
+	/// Builder tiretu: tworzy tiret i ustawia numer na podstawie indeksu.
+	/// </summary>
 	public sealed class TiretBuilder : IEntityBuilder<TiretBuildInput, DtoTiret>
 	{
 		public DtoTiret Build(TiretBuildInput input)

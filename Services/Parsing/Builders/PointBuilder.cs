@@ -4,9 +4,19 @@ using DtoPoint = ModelDto.EditorialUnits.Point;
 
 namespace WordParserLibrary.Services.Parsing.Builders
 {
+	/// <summary>
+	/// Wejscie dla budowania punktu (ustep + artykul + tekst).
+	/// </summary>
 	public sealed record PointBuildInput(DtoParagraph Paragraph, DtoArticle Article, string Text);
+
+	/// <summary>
+	/// Wynik zapewnienia punktu (niejawny/jawny).
+	/// </summary>
 	public sealed record PointEnsureResult(DtoPoint Point, bool CreatedImplicit);
 
+	/// <summary>
+	/// Builder punktu: tworzy punkt i parsuje numer z tekstu.
+	/// </summary>
 	public sealed class PointBuilder : IEntityBuilder<PointBuildInput, DtoPoint>
 	{
 		public DtoPoint Build(PointBuildInput input)

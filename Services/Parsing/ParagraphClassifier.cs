@@ -13,6 +13,9 @@ namespace WordParserLibrary.Services.Parsing
 		Unknown
 	}
 
+	/// <summary>
+	/// Wynik klasyfikacji akapitu: typ + informacje o konflikcie styl/tekst.
+	/// </summary>
 	public sealed class ClassificationResult
 	{
 		public ParagraphKind Kind { get; set; } = ParagraphKind.Unknown;
@@ -21,8 +24,14 @@ namespace WordParserLibrary.Services.Parsing
 		public bool StyleTextConflict { get; set; }
 	}
 
+	/// <summary>
+	/// Klasyfikator akapitow. Rozpoznaje typ jednostki na bazie stylu i tekstu.
+	/// </summary>
 	public sealed class ParagraphClassifier : IParagraphClassifier
 	{
+		/// <summary>
+		/// Klasyfikuje akapit do typu jednostki (Art/Ust/Pkt/Lit/Tir).
+		/// </summary>
 		public ClassificationResult Classify(string text, string? styleId)
 		{
 			var styleType = GetStyleType(styleId);

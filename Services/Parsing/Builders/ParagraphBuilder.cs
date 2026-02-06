@@ -3,9 +3,19 @@ using DtoParagraph = ModelDto.EditorialUnits.Paragraph;
 
 namespace WordParserLibrary.Services.Parsing.Builders
 {
+	/// <summary>
+	/// Wejscie dla budowania ustepu (artykul + biezacy ustep + tekst).
+	/// </summary>
 	public sealed record ParagraphBuildInput(DtoArticle Article, DtoParagraph? CurrentParagraph, string Text);
+
+	/// <summary>
+	/// Wynik zapewnienia ustepu (niejawny/jawny).
+	/// </summary>
 	public sealed record ParagraphEnsureResult(DtoParagraph Paragraph, bool CreatedImplicit);
 
+	/// <summary>
+	/// Builder ustepu: tworzy lub uzupelnia ustep w kontekscie artykulu.
+	/// </summary>
 	public sealed class ParagraphBuilder : IEntityBuilder<ParagraphBuildInput, DtoParagraph>
 	{
 		public DtoParagraph Build(ParagraphBuildInput input)

@@ -5,6 +5,9 @@ using WordParserLibrary.Services.Parsing.Builders;
 
 namespace WordParserLibrary.Services.Parsing
 {
+	/// <summary>
+	/// Orkiestrator parsowania: klasyfikuje akapity i deleguje budowanie encji.
+	/// </summary>
 	public sealed class ParserOrchestrator
 	{
 		private readonly ParagraphClassifier _classifier = new();
@@ -14,6 +17,9 @@ namespace WordParserLibrary.Services.Parsing
 		private readonly LetterBuilder _letterBuilder = new();
 		private readonly TiretBuilder _tiretBuilder = new();
 
+		/// <summary>
+		/// Przetwarza pojedynczy akapit i aktualizuje stan kontekstu.
+		/// </summary>
 		public void ProcessParagraph(Paragraph paragraph, ParsingContext context)
 		{
 			var text = paragraph.InnerText.Sanitize().Trim();
