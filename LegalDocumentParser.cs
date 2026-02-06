@@ -3,9 +3,8 @@ using System.Linq;
 using DocumentFormat.OpenXml.Packaging;
 using Word = DocumentFormat.OpenXml.Wordprocessing;
 using ModelDto;
-using ModelDto.EditorialUnits;
 using ModelDto.SystematizingUnits;
-using Serilog;
+using WordParserLibrary.Services.Parsing;
 
 namespace WordParserLibrary
 {
@@ -25,20 +24,12 @@ namespace WordParserLibrary
 			var document = new LegalDocument();
 			var subchapter = GetDefaultSubchapter(document);
 
+			var context = new ParsingContext(document, subchapter);
+			var orchestrator = new ParserOrchestrator();
+
 			foreach (var paragraph in mainPart.Document.Descendants<Word.Paragraph>())
 			{
-				if (!IsArticleParagraph(paragraph))
-				{
-					continue;
-				}
-
-				var article = new Article
-				{
-					Parent = subchapter,
-					ContentText = paragraph.InnerText.Sanitize().Trim()
-				};
-
-				subchapter.Articles.Add(article);
+				orchestrator.ProcessParagraph(paragraph, context);
 			}
 
 			return document;
@@ -54,21 +45,5 @@ namespace WordParserLibrary
 			return chapter.Subchapters.First();
 		}
 
-		private static bool IsArticleParagraph(Word.Paragraph paragraph)
-		{
-            Log.Debug("[IsArticleParagraph] Styl: {StyleId} paragraf: {ParagraphText}", paragraph.StyleId(), paragraph.InnerText);
-			if (paragraph.StyleId("ART") == true)
-			{
-				return true;
-			}
-
-			var text = paragraph.InnerText?.Trim();
-			if (string.IsNullOrEmpty(text))
-			{
-				return false;
-			}
-
-			return text.StartsWith("Art.", StringComparison.Ordinal);
-		}
 	}
 }
