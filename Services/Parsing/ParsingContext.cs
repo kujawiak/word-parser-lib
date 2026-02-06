@@ -8,7 +8,8 @@ using DtoPoint = ModelDto.EditorialUnits.Point;
 namespace WordParserLibrary.Services.Parsing
 {
 	/// <summary>
-	/// Kontekst parsowania przechowujacy aktualny stan drzewa encji.
+	/// Kontekst parsowania przechowujacy aktualny stan drzewa encji
+	/// oraz biezaca pozycje strukturalna w hierarchii jednostek redakcyjnych.
 	/// </summary>
 	public sealed class ParsingContext
 	{
@@ -25,5 +26,25 @@ namespace WordParserLibrary.Services.Parsing
 		public DtoPoint? CurrentPoint { get; set; }
 		public DtoLetter? CurrentLetter { get; set; }
 		public int CurrentTiretIndex { get; set; }
+
+		/// <summary>
+		/// Serwis do budowania i aktualizacji referencji strukturalnych
+		/// w kontekscie nowelizacji.
+		/// </summary>
+		public LegalReferenceService ReferenceService { get; } = new();
+
+		/// <summary>
+		/// Biezaca pozycja strukturalna w hierarchii jednostek redakcyjnych
+		/// (art. -> ust. -> pkt -> lit. -> tiret). Aktualizowana przez orkiestrator
+		/// po kazdym zbudowaniu encji.
+		/// </summary>
+		public StructuralReference CurrentStructuralReference { get; } = new();
+
+		/// <summary>
+		/// Wykryte cele nowelizacji w tresci jednostek redakcyjnych.
+		/// Klucz: Guid encji, Wartosc: wykryty cel (referencja strukturalna z RawText).
+		/// Wypelniane przez orkiestrator podczas parsowania encji IHasAmendments.
+		/// </summary>
+		public Dictionary<Guid, StructuralAmendmentReference> DetectedAmendmentTargets { get; } = new();
 	}
 }

@@ -2,11 +2,13 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using ModelDto;
 using WordParserLibrary.Helpers;
 using WordParserLibrary.Services.Parsing.Builders;
+using Serilog;
 
 namespace WordParserLibrary.Services.Parsing
 {
 	/// <summary>
-	/// Orkiestrator parsowania: klasyfikuje akapity i deleguje budowanie encji.
+	/// Orkiestrator parsowania: klasyfikuje akapity, deleguje budowanie encji
+	/// i aktualizuje kontekst nowelizacji (pozycje strukturalna i wykryte cele).
 	/// </summary>
 	public sealed class ParserOrchestrator
 	{
@@ -39,6 +41,13 @@ namespace WordParserLibrary.Services.Parsing
 				context.CurrentPoint = null;
 				context.CurrentLetter = null;
 				context.CurrentTiretIndex = 0;
+
+				UpdateStructuralReference(context, result.Article);
+				if (result.Paragraph != null && !result.Paragraph.IsImplicit)
+				{
+					UpdateStructuralReference(context, result.Paragraph);
+					DetectAmendmentTargets(context, result.Paragraph);
+				}
 				return;
 			}
 
@@ -55,6 +64,9 @@ namespace WordParserLibrary.Services.Parsing
 					context.CurrentPoint = null;
 					context.CurrentLetter = null;
 					context.CurrentTiretIndex = 0;
+
+					UpdateStructuralReference(context, context.CurrentParagraph);
+					DetectAmendmentTargets(context, context.CurrentParagraph);
 					break;
 				case ParagraphKind.Point:
 					var ensuredParagraph = _paragraphBuilder.EnsureForPoint(context.CurrentArticle, context.CurrentParagraph);
@@ -63,6 +75,9 @@ namespace WordParserLibrary.Services.Parsing
 					ValidationReporter.AddClassificationWarning(context.CurrentPoint, classification, "PKT");
 					context.CurrentLetter = null;
 					context.CurrentTiretIndex = 0;
+
+					UpdateStructuralReference(context, context.CurrentPoint);
+					DetectAmendmentTargets(context, context.CurrentPoint);
 					break;
 				case ParagraphKind.Letter:
 					var ensuredPoint = _pointBuilder.EnsureForLetter(context.CurrentParagraph, context.CurrentArticle, context.CurrentPoint);
@@ -75,6 +90,9 @@ namespace WordParserLibrary.Services.Parsing
 					context.CurrentLetter = _letterBuilder.Build(new LetterBuildInput(context.CurrentPoint, context.CurrentParagraph, context.CurrentArticle, text));
 					ValidationReporter.AddClassificationWarning(context.CurrentLetter, classification, "LIT");
 					context.CurrentTiretIndex = 0;
+
+					UpdateStructuralReference(context, context.CurrentLetter);
+					DetectAmendmentTargets(context, context.CurrentLetter);
 					break;
 				case ParagraphKind.Tiret:
 					var ensuredPointForTiret = _pointBuilder.EnsureForLetter(context.CurrentParagraph, context.CurrentArticle, context.CurrentPoint);
@@ -94,13 +112,83 @@ namespace WordParserLibrary.Services.Parsing
 							"Brak jawnej litery; utworzono niejawna litere na podstawie struktury.");
 					}
 					context.CurrentTiretIndex++;
-					_tiretBuilder.Build(new TiretBuildInput(context.CurrentLetter, context.CurrentPoint, context.CurrentParagraph,
+					var tiret = _tiretBuilder.Build(new TiretBuildInput(context.CurrentLetter, context.CurrentPoint, context.CurrentParagraph,
 						context.CurrentArticle, text, context.CurrentTiretIndex));
-					ValidationReporter.AddClassificationWarning(context.CurrentLetter.Tirets[^1], classification, "TIR");
+					ValidationReporter.AddClassificationWarning(tiret, classification, "TIR");
+
+					UpdateStructuralReference(context, tiret);
+					DetectAmendmentTargets(context, tiret);
 					break;
 				default:
 					break;
 			}
+		}
+
+		/// <summary>
+		/// Aktualizuje biezaca pozycje strukturalna w kontekscie na podstawie
+		/// numeru zbudowanej encji. Ustawienie poziomu resetuje podrzedne
+		/// (np. SetArticle zeruje ust/pkt/lit/tir).
+		/// </summary>
+		private static void UpdateStructuralReference(ParsingContext context, BaseEntity entity)
+		{
+			var numberValue = entity.Number?.Value;
+			if (string.IsNullOrEmpty(numberValue))
+				return;
+
+			var reference = context.CurrentStructuralReference;
+			switch (entity.UnitType)
+			{
+				case UnitType.Article:
+					reference.SetArticle(numberValue);
+					break;
+				case UnitType.Paragraph:
+					reference.SetParagraph(numberValue);
+					break;
+				case UnitType.Point:
+					reference.SetPoint(numberValue);
+					break;
+				case UnitType.Letter:
+					reference.SetLetter(numberValue);
+					break;
+				case UnitType.Tiret:
+					reference.SetTiret(numberValue);
+					break;
+			}
+		}
+
+		/// <summary>
+		/// Wykrywa cele nowelizacji w tresci encji implementujacej IHasAmendments.
+		/// Parsuje wzorce typu "w art. 5", "po ust. 2" itp. i zapisuje
+		/// wykryty cel w kontekscie (DetectedAmendmentTargets).
+		/// </summary>
+		private static void DetectAmendmentTargets(ParsingContext context, BaseEntity entity)
+		{
+			if (entity is not IHasAmendments)
+				return;
+
+			if (string.IsNullOrWhiteSpace(entity.ContentText))
+				return;
+
+			var targetRef = new StructuralReference();
+			context.ReferenceService.UpdateLegalReference(targetRef, entity.ContentText);
+
+			// Sprawdz czy wykryto jakikolwiek cel nowelizacji
+			if (targetRef.Article == null && targetRef.Paragraph == null &&
+				targetRef.Point == null && targetRef.Letter == null && targetRef.Tiret == null)
+			{
+				return;
+			}
+
+			var amendmentRef = new StructuralAmendmentReference
+			{
+				Structure = targetRef,
+				RawText = entity.ContentText
+			};
+
+			context.DetectedAmendmentTargets[entity.Guid] = amendmentRef;
+
+			Log.Debug("Wykryto cel nowelizacji w {UnitType} [{EntityId}]: {AmendmentTarget}",
+				entity.UnitType, entity.Id, amendmentRef);
 		}
 	}
 }

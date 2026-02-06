@@ -11,7 +11,7 @@ namespace WordParserLibrary.Services
     public class LegalReferenceService
     {
         /// <summary>
-        /// Aktualizuje odniesienia w obiekcie LegalReferenceDto na podstawie treści encji.
+        /// Aktualizuje odniesienia w obiekcie StructuralReference na podstawie treści encji.
         /// Szuka wzorców takich jak "art. 5", "ust. 2", "pkt 3a", "lit. b", "tiret 1".
         /// </summary>
         public void UpdateLegalReference(StructuralReference reference, string contentText)
@@ -21,28 +21,28 @@ namespace WordParserLibrary.Services
 
             if (reference.Article == null)
             {
-                var regex = new Regex(@"(?:po|Po|w|W)\s*art\.\s*([a-zA-Z0-9]+)");
+                var regex = new Regex(@"(?:(?:po|Po|w|W)\s+)?art\.\s*([a-zA-Z0-9]+)");
                 var match = regex.Match(contentText);
                 if (match.Success) reference.Article = match.Groups[1].Value;
             }
 
             if (reference.Paragraph == null)
             {
-                var subsectionRegex = new Regex(@"(?:po|Po|w|W)\s*ust\.\s*([a-zA-Z0-9]+)");
+                var subsectionRegex = new Regex(@"(?:(?:po|Po|w|W)\s+)?ust\.\s*([a-zA-Z0-9]+)");
                 var subsectionMatch = subsectionRegex.Match(contentText);
                 if (subsectionMatch.Success) reference.Paragraph = subsectionMatch.Groups[1].Value;
             }
 
             if (reference.Point == null)
             {
-                var pointRegex = new Regex(@"(?:po|Po|w|W)\s*pkt\s*([a-zA-Z0-9]+)");
+                var pointRegex = new Regex(@"(?:(?:po|Po|w|W)\s+)?pkt\s*([a-zA-Z0-9]+)");
                 var pointMatch = pointRegex.Match(contentText);
                 if (pointMatch.Success) reference.Point = pointMatch.Groups[1].Value;
             }
 
             if (reference.Letter == null)
             {
-                var letterRegex = new Regex(@"(?:po|Po|w|W)\s*lit\.\s*([a-zA-Z])");
+                var letterRegex = new Regex(@"(?:(?:po|Po|w|W)\s+)?lit\.\s*([a-zA-Z])");
                 var letterMatch = letterRegex.Match(contentText);
                 if (letterMatch.Success) reference.Letter = letterMatch.Groups[1].Value;
             }
